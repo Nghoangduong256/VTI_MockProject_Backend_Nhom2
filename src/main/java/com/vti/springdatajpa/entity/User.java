@@ -10,11 +10,11 @@ import java.util.*;
 @NoArgsConstructor @AllArgsConstructor
 public class User {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String userName;
 
     @Column(nullable = false, unique = true)
     private String email;
