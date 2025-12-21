@@ -21,7 +21,7 @@ public class RegisterServiceImpl implements RegisterService{
     public User createAccount(User user) {
 
         // check trùng username
-        if(registerRepository.existsByUserName(user.getUserName())){
+        if(registerRepository.existsByUsername(user.getUsername())){
             throw new RuntimeException("USERNAME_EXISTS");
         }
         // check trùng email
