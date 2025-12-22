@@ -1,5 +1,6 @@
 package com.vti.springdatajpa.exception;
 
+
 import com.vti.springdatajpa.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,28 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    // ===== REGISTER ERROR =====
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleRegisterError(RuntimeException ex) {
+
+        switch (ex.getMessage()) {
+            case "EMAIL_EXISTS":
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Email already exists");
+
+            case "USERNAME_EXISTS":
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Username already exists");
+
+            case "PHONE_EXISTS":
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Phone already exists");
+
+            default:
+                return ResponseEntity.badRequest()
+                        .body("Invalid request");
+        }
+    }
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
@@ -54,5 +77,6 @@ public class GlobalExceptionHandler {
                 "An unexpected error occurred: " + ex.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+
     }
 }

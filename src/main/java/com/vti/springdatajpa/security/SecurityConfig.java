@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ⭐ preflight
                         .requestMatchers("/api/auth/**").permitAll()
+                        //  thêm đường dẫn register vào đây để cho phép truy cập công khai
+                        .requestMatchers("/api/E-Wallet/**").permitAll()
+                        //
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
 
                         // ✅ Role-based access control

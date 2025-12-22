@@ -18,8 +18,8 @@ import java.util.UUID;
 
 public class Wallet {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
