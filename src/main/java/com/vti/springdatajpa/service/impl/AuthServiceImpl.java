@@ -18,7 +18,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @Override
     public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByUsername(request.getUsername())

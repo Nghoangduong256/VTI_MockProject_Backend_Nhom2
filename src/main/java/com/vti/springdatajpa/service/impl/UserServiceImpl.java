@@ -1,4 +1,4 @@
-package com.vti.springdatajpa.service.ServiceImpl;
+package com.vti.springdatajpa.service.impl;
 
 import com.vti.springdatajpa.dto.UserDto;
 import com.vti.springdatajpa.entity.User;
@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService {
 
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
+        dto.setAvatar(user.getAvatar());
         dto.setPhone(user.getPhone());
         dto.setDateOfBirth(user.getDateOfBirth());
         dto.setAddress(user.getAddress());
@@ -79,6 +80,13 @@ public class UserServiceImpl implements UserService {
             user.setAddress(userDto.getAddress());
         }
 
+        userRepository.save(user);
+    }
+
+    @Override
+    public void updateUserAvatar(UUID id, String avatarUrl) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAvatar(avatarUrl);
         userRepository.save(user);
     }
 

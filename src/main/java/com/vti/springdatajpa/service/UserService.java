@@ -10,6 +10,8 @@ public interface UserService {
 
     public void updateUser(UUID id, UserDto userDto);
 
+    public void updateUserAvatar(UUID id, String avatarUrl);
+
     public void deleteUserById(UUID id);
 
 }
