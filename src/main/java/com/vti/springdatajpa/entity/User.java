@@ -31,13 +31,16 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(name = "avatar", columnDefinition = "MEDIUMTEXT")   // Base64
+    private String avatar;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
     @Column(length = 255)
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     private String pinHash;
@@ -46,6 +49,7 @@ public class User {
     private boolean isVerified;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20, nullable = false)
     private Role role;
 
     private LocalDateTime createdAt;

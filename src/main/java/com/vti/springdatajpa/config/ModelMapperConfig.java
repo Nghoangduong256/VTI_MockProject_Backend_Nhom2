@@ -1,6 +1,7 @@
 package com.vti.springdatajpa.config;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,8 +10,8 @@ public class ModelMapperConfig {
 
     @Bean
     public ModelMapper initModelMapper() {
-
-        ModelMapper modelMapper = new ModelMapper();
+        // Thế:
+//        ModelMapper modelMapper = new ModelMapper();
 //        modelMapper.getConfiguration().setSkipNullEnabled(true);
 //        Converter<List<ProjectAccount>, List<AccountDtoInDepartment>> projectAccountConverter =
 //                ctx -> ctx.getSource() == null ? null :
@@ -29,6 +30,11 @@ public class ModelMapperConfig {
 //                .addMappings(m -> m.using(projectAccountConverter)
 //                        .map(Project::getProjectAccounts, ProjectDto::setAccount));
 
+//        return modelMapper;
+
+        // Duong: Tạo object và cấu hình
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper;
     }
 }

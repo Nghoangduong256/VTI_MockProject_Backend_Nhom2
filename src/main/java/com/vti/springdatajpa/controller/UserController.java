@@ -38,4 +38,11 @@ public class UserController {
         userService.deleteUserById(id);
         return new ResponseEntity<>("Delete user success", HttpStatus.OK);
     }
+
+    //Update avatar
+    @PutMapping("/{id}/avatar")
+    public ResponseEntity<?> updateAvatar(@PathVariable(name = "id") UUID id, @RequestParam String avatarUrl) {
+        userService.updateUserAvatar(id, avatarUrl);
+        return new ResponseEntity<>("Update avatar success", HttpStatus.OK);
+    }
 }
