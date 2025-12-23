@@ -37,7 +37,7 @@ public class User {
     @Column(length = 255)
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     private String pinHash;
@@ -46,6 +46,7 @@ public class User {
     private boolean isVerified;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 20, nullable = false)
     private Role role;
 
     private LocalDateTime createdAt;
