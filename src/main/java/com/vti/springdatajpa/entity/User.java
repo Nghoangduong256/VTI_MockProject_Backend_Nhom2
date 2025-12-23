@@ -1,6 +1,10 @@
 package com.vti.springdatajpa.entity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -10,8 +14,11 @@ import java.util.*;
 @NoArgsConstructor @AllArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue
+    @UuidGenerator
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", length = 36, nullable = false, updatable = false)
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -20,7 +27,15 @@ public class User {
     private String email;
 
     private String phone;
+
+    @Column(name = "full_name")
     private String fullName;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(length = 255)
+    private String address;
 
     @Column(nullable = false)
     private String passwordHash;

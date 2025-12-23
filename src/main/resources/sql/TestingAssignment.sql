@@ -10,6 +10,8 @@ CREATE TABLE users (
   email VARCHAR(100) UNIQUE NOT NULL,
   phone VARCHAR(20) UNIQUE,
   full_name VARCHAR(100),
+  date_of_birth DATE,
+  address VARCHAR(255),
   password_hash TEXT NOT NULL,
   pin_hash TEXT,
   role ENUM('USER','ADMIN') DEFAULT 'USER',
