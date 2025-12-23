@@ -18,7 +18,7 @@ import java.util.UUID;
 public class BankTransfer {
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @OneToOne
     private Transaction transaction;

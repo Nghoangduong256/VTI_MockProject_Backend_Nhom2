@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.debug("JWT token validated for user: {} with role: {}", username, role);
 
             // Load user from database
-            User user = userRepository.findById(UUID.fromString(userId))
+            User user = userRepository.findById(Integer.valueOf(userId))
                     .orElseThrow(() -> new AuthException("User not found"));
 
             // Check if user is still active

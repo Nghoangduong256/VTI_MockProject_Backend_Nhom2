@@ -18,13 +18,13 @@ import java.util.UUID;
 public class TransferDetail {
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @OneToOne
     private Transaction transaction;
 
-    private UUID counterpartyWalletId;
-    private UUID counterpartyUserId;
+    private Integer counterpartyWalletId;
+    private Integer counterpartyUserId;
 
     private String note;
 

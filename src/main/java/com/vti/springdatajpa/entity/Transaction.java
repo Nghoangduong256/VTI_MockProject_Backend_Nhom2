@@ -18,7 +18,7 @@ import java.util.UUID;
 public class Transaction {
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @ManyToOne
     private Wallet wallet;
@@ -41,7 +41,7 @@ public class Transaction {
     private String referenceId;
     private String idempotencyKey;
 
-    private UUID relatedTxId;
+    private Integer relatedTxId;
 
     @Column(columnDefinition = "TEXT")
     private String metadata;

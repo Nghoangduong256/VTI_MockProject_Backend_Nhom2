@@ -19,7 +19,7 @@ public class BalanceChangeLog {
 
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @ManyToOne
     private Wallet wallet;

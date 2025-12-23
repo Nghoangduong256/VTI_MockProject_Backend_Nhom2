@@ -18,7 +18,7 @@ import java.util.UUID;
 public class Session {
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @ManyToOne
     private User user;

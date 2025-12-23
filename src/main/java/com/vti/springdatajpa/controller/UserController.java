@@ -20,22 +20,29 @@ public class UserController {
 
     //Get by id
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProfileById(@PathVariable(name = "id") UUID id) {
+    public ResponseEntity<?> getProfileById(@PathVariable(name = "id") Integer id) {
         System.out.println("ID from request = " + id);
         return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
     }
 
     //Update profile
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProfile(@PathVariable(name = "id") UUID id, @RequestBody UserDto userDto) {
+    public ResponseEntity<?> updateProfile(@PathVariable(name = "id") Integer id, @RequestBody UserDto userDto) {
         userService.updateUser(id, userDto);
         return new ResponseEntity<>("Update user success", HttpStatus.OK);
     }
 
     //Delete profile
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProfile(@PathVariable(name = "id") UUID id) {
+    public ResponseEntity<?> deleteProfile(@PathVariable(name = "id") Integer id) {
         userService.deleteUserById(id);
         return new ResponseEntity<>("Delete user success", HttpStatus.OK);
+    }
+
+    //Update avatar
+    @PutMapping("/{id}/avatar")
+    public ResponseEntity<?> updateAvatar(@PathVariable(name = "id") Integer id, @RequestParam String avatarUrl) {
+        userService.updateUserAvatar(id, avatarUrl);
+        return new ResponseEntity<>("Update avatar success", HttpStatus.OK);
     }
 }

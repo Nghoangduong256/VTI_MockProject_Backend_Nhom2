@@ -6,10 +6,12 @@ import com.vti.springdatajpa.entity.User;
 import java.util.UUID;
 
 public interface UserService {
-    public UserDto getUserById(UUID id);
+    public UserDto getUserById(Integer id);
 
-    public void updateUser(UUID id, UserDto userDto);
+    public void updateUser(Integer id, UserDto userDto);
 
-    public void deleteUserById(UUID id);
+    public void updateUserAvatar(Integer id, String avatarUrl);
+
+    public void deleteUserById(Integer id);
 
 }

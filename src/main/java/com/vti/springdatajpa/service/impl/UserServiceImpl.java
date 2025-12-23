@@ -1,4 +1,4 @@
-package com.vti.springdatajpa.service.ServiceImpl;
+package com.vti.springdatajpa.service.impl;
 
 import com.vti.springdatajpa.dto.UserDto;
 import com.vti.springdatajpa.entity.User;
@@ -7,7 +7,12 @@ import com.vti.springdatajpa.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.vti.springdatajpa.service.ImageHandlerService;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URLConnection;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -20,7 +25,7 @@ public class UserServiceImpl implements UserService {
     private ModelMapper modelMapper;
 
     @Override
-    public UserDto getUserById(UUID id) {
+    public UserDto getUserById(Integer id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id = " + id));
         UserDto dto = new UserDto();
 
@@ -32,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
+        dto.setAvatar(user.getAvatar());
         dto.setPhone(user.getPhone());
         dto.setDateOfBirth(user.getDateOfBirth());
         dto.setAddress(user.getAddress());
@@ -40,7 +46,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(UUID id, UserDto userDto) {
+    public void updateUser(Integer id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id = " + id));
 
@@ -83,11 +89,64 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUserById(UUID id) {
+    public void updateUserAvatar(Integer id, String avatarUrl) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAvatar(avatarUrl);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deleteUserById(Integer id) {
         if (userRepository.existsById(id)){
             userRepository.deleteById(id);
         } else {
             throw new RuntimeException("User not found");
         }
     }
+
+    public void updateAvatar(Integer userId, String avatarBase64) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id = " + userId));
+        if (avatarBase64 == null) return;
+
+        String cleanBase64 = stripBase64Prefix(avatarBase64);
+
+        // validate size
+        validateBase64Size(cleanBase64);
+
+        user.setAvatar(cleanBase64);
+        userRepository.save(user);
+    }
+
+    // Helper method to strip data URL prefix if present
+    private String stripBase64Prefix(String base64) {
+        if (base64 == null) return null;
+
+        int commaIndex = base64.indexOf(",");
+        return commaIndex != -1
+                ? base64.substring(commaIndex + 1)
+                : base64;
+    }
+
+    // Helper method to validate size of base64 string
+    private void validateBase64Size(String base64) {
+        byte[] decodedBytes = Base64.getDecoder().decode(base64);
+        int sizeInBytes = decodedBytes.length;
+
+        if (sizeInBytes > 2 * 1024 * 1024) {
+            throw new IllegalArgumentException("Avatar exceeds 2MB");
+        }
+    }
+
+    // Helper method to validate image type
+    private void validateImageType(byte[] imageBytes) throws IOException {
+        String mimeType = URLConnection.guessContentTypeFromStream(
+                new ByteArrayInputStream(imageBytes)
+        );
+
+        if (mimeType == null || !mimeType.startsWith("image/")) {
+            throw new IllegalArgumentException("Invalid image format");
+        }
+    }
+
 }

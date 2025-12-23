@@ -19,13 +19,13 @@ public class AdminAction {
 
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
-    private UUID adminId;
+    private Integer adminId;
 
     private String actionType;
     private String targetType;
-    private UUID targetId;
+    private Integer targetId;
 
     private String reason;
 

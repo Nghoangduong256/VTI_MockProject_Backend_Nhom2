@@ -19,7 +19,7 @@ import java.util.UUID;
 public class Notification {
     @Id
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @ManyToOne
     private User user;
