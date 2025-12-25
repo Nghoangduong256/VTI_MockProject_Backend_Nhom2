@@ -31,6 +31,9 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(name = "avatar", columnDefinition = "MEDIUMTEXT")   // Base64
+    private String avatar;
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
