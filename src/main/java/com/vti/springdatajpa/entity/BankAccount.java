@@ -1,5 +1,7 @@
 package com.vti.springdatajpa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vti.springdatajpa.entity.enums.BankAccountStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +22,11 @@ public class BankAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    private String code;
+
     @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     private String bankCode;

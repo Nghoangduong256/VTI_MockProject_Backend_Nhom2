@@ -1,5 +1,6 @@
 package com.vti.springdatajpa.entity;
 
+import com.vti.springdatajpa.entity.enums.TransferMethod;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +19,6 @@ public class TransferDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     @OneToOne
     private Transaction transaction;
 

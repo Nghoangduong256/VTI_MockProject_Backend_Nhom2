@@ -52,14 +52,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // Validate and extract claims
             Claims claims = jwtUtil.extractClaims(token);
-            String userId = claims.getSubject();
+            Integer userId = Integer.parseInt(claims.getSubject());
             String role = claims.get("role", String.class);
             String username = claims.get("username", String.class);
 
             log.debug("JWT token validated for user: {} with role: {}", username, role);
 
             // Load user from database
-            User user = userRepository.findById(Integer.parseInt(userId))
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new AuthException("User not found"));
 
             // Check if user is still active

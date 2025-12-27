@@ -1,5 +1,6 @@
 package com.vti.springdatajpa.entity;
 
+import com.vti.springdatajpa.entity.enums.BankTransferStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
