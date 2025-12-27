@@ -6,8 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
+
 @Service
-public class RegisterServiceImpl implements RegisterService{
+public class RegisterServiceImpl implements RegisterService {
 
     private final RegisterRepository registerRepository;
     private final PasswordEncoder passwordEncoder;
@@ -21,15 +22,15 @@ public class RegisterServiceImpl implements RegisterService{
     public User createAccount(User user) {
 
         // check trùng username
-        if(registerRepository.existsByUsername(user.getUsername())){
+        if (registerRepository.existsByUserName(user.getUserName())) {
             throw new RuntimeException("USERNAME_EXISTS");
         }
         // check trùng email
-        if(registerRepository.existsByEmail(user.getEmail())){
+        if (registerRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("EMAIL_EXISTS");
         }
         // check trùng phone
-        if(registerRepository.existsByPhone(user.getPhone())){
+        if (registerRepository.existsByPhone(user.getPhone())) {
             throw new RuntimeException("PHONE_EXISTS");
         }
 

@@ -22,7 +22,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -60,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.debug("JWT token validated for user: {} with role: {}", username, role);
 
             // Load user from database
-            User user = userRepository.findById(UUID.fromString(userId))
+            User user = userRepository.findById(Integer.parseInt(userId))
                     .orElseThrow(() -> new AuthException("User not found"));
 
             // Check if user is still active
