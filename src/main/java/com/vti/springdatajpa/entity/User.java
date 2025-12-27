@@ -1,20 +1,24 @@
 package com.vti.springdatajpa.entity;
+import com.vti.springdatajpa.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String userName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -36,7 +40,10 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "user")
-    private List<Wallet> wallets = new ArrayList<>();
+    @OneToOne(mappedBy = "user")
+    private Wallet wallet;
+
+    private String avatarUrl;
+    private String membership; // e.g., "Silver", "Gold", "Platinum"
 
 }

@@ -1,7 +1,7 @@
 package com.vti.springdatajpa.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.vti.springdatajpa.entity.TransactionStatus;
+import com.vti.springdatajpa.entity.enums.TransactionStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ public class DepositHistoryDTO {
     private Integer id;
     private Double amount;
     private String referenceId;
-    private TransactionStatus status;
+    private com.vti.springdatajpa.entity.enums.TransactionStatus status;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 }

@@ -3,6 +3,7 @@ package com.vti.springdatajpa.service;
 import com.vti.springdatajpa.dto.DepositHistoryDTO;
 import com.vti.springdatajpa.dto.DepositRequest;
 import com.vti.springdatajpa.entity.*;
+import com.vti.springdatajpa.entity.enums.TransactionType;
 import com.vti.springdatajpa.repository.TransactionRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
 import org.modelmapper.ModelMapper;
