@@ -2,15 +2,14 @@ package com.vti.springdatajpa.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.util.UUID;
 
 @Entity
 @Data
 @Table(name = "cards")
 public class Card {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, unique = true)
     private String cardNumber;

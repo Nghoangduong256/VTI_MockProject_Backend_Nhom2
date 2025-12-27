@@ -2,7 +2,6 @@ package com.vti.springdatajpa.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.UUID;
 
 @Entity
 @Table(name = "contacts")
@@ -12,8 +11,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Contact {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

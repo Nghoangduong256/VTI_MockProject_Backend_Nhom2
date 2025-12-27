@@ -1,11 +1,10 @@
 package com.vti.springdatajpa.dto;
 
 import lombok.Data;
-import java.util.UUID;
 
 @Data
 public class CardDTO {
-    private UUID id;
+    private Integer id;
     private String cardNumber; // Full for input, masked for output
     private String holderName;
     private String expiryDate; // MM/yy

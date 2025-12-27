@@ -9,9 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
-public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
+public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
 
     // Find transactions for a specific wallet
     Page<Transaction> findByWalletId(Integer walletId, Pageable pageable);
