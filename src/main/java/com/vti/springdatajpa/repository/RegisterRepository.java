@@ -4,7 +4,9 @@ import com.vti.springdatajpa.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RegisterRepository extends JpaRepository<User, Integer> {
-    boolean existsByUsername(String userName);
+    boolean existsByUserName(String userName);
+
     boolean existsByEmail(String email);
+
     boolean existsByPhone(String phone);
 }

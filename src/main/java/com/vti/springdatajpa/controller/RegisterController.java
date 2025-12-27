@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(value ="api/E-Wallet/register")
+@RequestMapping("/api/auth/register")
 public class RegisterController {
     private final RegisterService registerService;
     private final ModelMapper modelMapper;
@@ -17,14 +17,13 @@ public class RegisterController {
         this.registerService = registerService;
         this.modelMapper = modelMapper;
     }
+
     // Tạo tài khoản mới
     @PostMapping
-    public void createAccount(@RequestBody RegisterForm registerForm){
-        User user = modelMapper.map(registerForm,User.class);
+    public void createAccount(@RequestBody RegisterForm registerForm) {
+        User user = modelMapper.map(registerForm, User.class);
         registerService.createAccount(user);
     }
     //
-
-
 
 }
