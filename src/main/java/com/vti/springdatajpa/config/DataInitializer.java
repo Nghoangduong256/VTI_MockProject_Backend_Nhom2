@@ -1,6 +1,6 @@
 package com.vti.springdatajpa.config;
 
-import com.vti.springdatajpa.entity.Role;
+import com.vti.springdatajpa.entity.enums.Role;
 import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Configuration
 @RequiredArgsConstructor

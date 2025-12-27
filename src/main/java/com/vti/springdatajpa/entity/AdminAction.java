@@ -18,8 +18,8 @@ import java.util.UUID;
 public class AdminAction {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     private UUID adminId;
 

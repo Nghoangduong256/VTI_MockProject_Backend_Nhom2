@@ -1,6 +1,8 @@
 package com.vti.springdatajpa.entity;
+import com.vti.springdatajpa.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -10,8 +12,8 @@ import java.util.*;
 @NoArgsConstructor @AllArgsConstructor
 public class User {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -36,7 +38,7 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "user")
-    private List<Wallet> wallets = new ArrayList<>();
+    @OneToOne(mappedBy = "user")
+    private Wallet wallet;
 
 }

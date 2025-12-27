@@ -1,5 +1,8 @@
 package com.vti.springdatajpa.entity;
 
+import com.vti.springdatajpa.entity.enums.TransactionDirection;
+import com.vti.springdatajpa.entity.enums.TransactionStatus;
+import com.vti.springdatajpa.entity.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,8 +20,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Transaction {
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne
     private Wallet wallet;
