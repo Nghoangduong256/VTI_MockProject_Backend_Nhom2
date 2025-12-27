@@ -10,10 +10,15 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface WalletRepository extends JpaRepository<Wallet, Integer> {
+
+    // Dùng cho các nghiệp vụ tiền (deposit / withdraw)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select w from Wallet w where w.id = :id")
     Optional<Wallet> findByIdForUpdate(@Param("id") Integer id);
+
+    // Lấy ví theo user
     Optional<Wallet> findByUserId(Integer userId);
-    Wallet findByIdAndUserId(Integer id, Integer userId);
-    Wallet findByUserId(Integer userId);
+
+    // Bảo mật: đảm bảo ví thuộc user
+    Optional<Wallet> findByIdAndUserId(Integer id, Integer userId);
 }

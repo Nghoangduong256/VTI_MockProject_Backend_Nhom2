@@ -1,8 +1,8 @@
 package com.vti.springdatajpa.config;
 
-import com.vti.springdatajpa.entity.enums.Role;
-import com.vti.springdatajpa.entity.User;
-import com.vti.springdatajpa.repository.UserRepository;
+import com.vti.springdatajpa.entity.*;
+import com.vti.springdatajpa.entity.enums.*;
+import com.vti.springdatajpa.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;

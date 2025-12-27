@@ -8,6 +8,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
+
+    // dùng cho chống double-submit / retry
     Optional<Transaction> findByIdempotencyKey(String idempotencyKey);
-    List<Transaction> findByWalletIdAndTypeOrderByCreatedAtDesc(Integer walletId, TransactionType type);
+
+    // dùng cho lịch sử nạp tiền (top N)
+    List<Transaction> findTop5ByWallet_IdAndTypeOrderByCreatedAtDesc(
+            Integer walletId,
+            TransactionType type
+    );
+
+    // dùng khi cần full history (không limit)
+    List<Transaction> findByWallet_IdAndTypeOrderByCreatedAtDesc(
+            Integer walletId,
+            TransactionType type
+    );
 }
