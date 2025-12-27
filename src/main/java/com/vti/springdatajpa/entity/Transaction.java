@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
@@ -44,7 +44,7 @@ public class Transaction {
     private String referenceId;
     private String idempotencyKey;
 
-    private UUID relatedTxId;
+    private Integer relatedTxId;
 
     @Column(columnDefinition = "TEXT")
     private String metadata;

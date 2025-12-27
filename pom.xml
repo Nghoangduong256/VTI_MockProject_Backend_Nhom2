@@ -107,6 +107,19 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+		<!-- Model Mapper -->
+		<dependency>
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+
+		<!-- Spring Security Crypto (PasswordEncoder) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
 		<!-- JWT API -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -122,13 +135,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- JWT Jackson (JSON serialize/deserialize) -->
+		<!-- JWT Jackson -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+
 
 	</dependencies>
 

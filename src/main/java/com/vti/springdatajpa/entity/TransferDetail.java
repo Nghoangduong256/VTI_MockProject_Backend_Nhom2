@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "transfer_details")
@@ -23,8 +22,8 @@ public class TransferDetail {
     @OneToOne
     private Transaction transaction;
 
-    private UUID counterpartyWalletId;
-    private UUID counterpartyUserId;
+    private Integer counterpartyWalletId;
+    private Integer counterpartyUserId;
 
     private String note;
 

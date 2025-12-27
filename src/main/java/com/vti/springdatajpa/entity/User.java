@@ -8,15 +8,17 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String userName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -40,5 +42,8 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private Wallet wallet;
+
+    private String avatarUrl;
+    private String membership; // e.g., "Silver", "Gold", "Platinum"
 
 }
