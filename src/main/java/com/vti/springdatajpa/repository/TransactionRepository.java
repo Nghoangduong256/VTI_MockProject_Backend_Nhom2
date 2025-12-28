@@ -2,6 +2,8 @@ package com.vti.springdatajpa.repository;
 
 import com.vti.springdatajpa.entity.Transaction;
 import com.vti.springdatajpa.entity.enums.TransactionType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -23,4 +25,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             Integer walletId,
             TransactionType type
     );
+    
+    // dùng cho phân trang giao dịch
+    Page<Transaction> findByWalletId(Integer walletId, Pageable pageable);
 }

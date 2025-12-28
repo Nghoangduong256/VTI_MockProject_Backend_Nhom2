@@ -1,5 +1,6 @@
 package com.vti.springdatajpa.entity;
 
+import com.vti.springdatajpa.entity.enums.CardStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 

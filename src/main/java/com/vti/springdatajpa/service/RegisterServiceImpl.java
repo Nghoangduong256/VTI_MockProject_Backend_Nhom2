@@ -42,7 +42,7 @@ public class RegisterServiceImpl implements RegisterService {
         // mặc định Active khi tạo
         user.setActive(true);
         // set Role mặc định USER
-        user.setRole(com.vti.springdatajpa.entity.Role.USER);
+        user.setRole(com.vti.springdatajpa.entity.enums.Role.USER);
         // set createdAt
         user.setCreatedAt(java.time.LocalDateTime.now());
         return registerRepository.save(user);

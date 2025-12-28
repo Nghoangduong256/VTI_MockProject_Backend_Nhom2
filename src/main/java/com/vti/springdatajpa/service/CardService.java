@@ -36,7 +36,7 @@ public class CardService {
         card.setCvv(dto.getCvv());
         card.setBankName(dto.getBankName());
         card.setType(dto.getType());
-        card.setStatus(com.vti.springdatajpa.entity.CardStatus.ACTIVE);
+        card.setStatus(com.vti.springdatajpa.entity.enums.CardStatus.ACTIVE);
         card.setUser(user);
 
         Card savedCard = cardRepository.save(card);
