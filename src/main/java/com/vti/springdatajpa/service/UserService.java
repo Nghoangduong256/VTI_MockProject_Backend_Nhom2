@@ -7,23 +7,15 @@ import com.vti.springdatajpa.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
 
-    private final UserRepository userRepository;
 
-    public UserProfileDTO getProfile(String userName) {
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+public interface UserService {
+    public UserDto getUserById(Integer id);
 
-        UserProfileDTO dto = new UserProfileDTO();
-        dto.setFullName(user.getFullName());
-        dto.setEmail(user.getEmail());
-        dto.setUserName(user.getUserName());
-        dto.setAvatarUrl(user.getAvatarUrl());
-        dto.setMembership(user.getMembership());
+    public void updateUser(Integer id, UserDto userDto);
 
-        return dto;
-    }
+    public void updateUserAvatar(Integer id, String avatarUrl);
+
+    public void deleteUserById(Integer id);
+
 }
