@@ -29,13 +29,13 @@ public class WithdrawController {
         Integer userId = 1; // bạn thay bằng JWT principal
         return withdrawService.createWithdraw(userId, walletId, req, idempotencyKey);
     }
-
-    @GetMapping("/transactions")
-    public List<Transaction> list(@RequestParam TransactionType type) {
-        Integer userId = 1;
-
-        return txRepo.findAll().stream().filter(t -> t.getType() == type).toList();
-    }
+//
+//    @GetMapping("/transactions")
+//    public List<Transaction> list(@RequestParam TransactionType type) {
+//        Integer userId = 1;
+//
+//        return txRepo.findAll().stream().filter(t -> t.getType() == type).toList();
+//    }
 
 //    @PostMapping("/bank/webhook/withdraw")
 //    public void bankWebhook(@RequestBody BankWebhookRequest req) {

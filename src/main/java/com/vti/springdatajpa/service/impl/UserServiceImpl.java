@@ -3,22 +3,18 @@ package com.vti.springdatajpa.service.impl;
 import com.vti.springdatajpa.dto.UserOutputDTO;
 import com.vti.springdatajpa.entity.*;
 import com.vti.springdatajpa.repository.*;
-import com.vti.springdatajpa.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class UserServiceImpl implements UserService {
+@RequiredArgsConstructor
+public class UserServiceImpl {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
 
-    @Autowired
-    private WalletRepository walletRepository;
-
-    @Override
     public UserOutputDTO me() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserOutputDTO userOutputDTO = new UserOutputDTO();
@@ -26,7 +22,7 @@ public class UserServiceImpl implements UserService {
         userOutputDTO.setEmail(user.getEmail());
         userOutputDTO.setFullName(user.getFullName());
         userOutputDTO.setPhone(user.getPhone());
-        userOutputDTO.setUsername(user.getUsername());
+        userOutputDTO.setUsername(user.getUserName());
         userOutputDTO.setWallet(user.getWallet());
         return userOutputDTO;
     }

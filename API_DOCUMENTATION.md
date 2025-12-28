@@ -2,6 +2,13 @@
 
 Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống, bao gồm endpoint, dữ liệu đầu vào/đầu ra, và logic xử lý.
 
+**Lưu ý**: Tất cả các lỗi code đã được fix và cập nhật:
+- Import errors đã được sửa
+- Method names đã được chuẩn hóa
+- Interface-implementation mismatch đã được fix
+- Package structure đã được đồng bộ
+- Dependency injection style đã được chuẩn hóa
+
 ---
 
 ## 1. Authentication (Xác thực)
@@ -223,4 +230,164 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 - **Logic**:
   - Cộng tiền vào ví, tạo bản ghi `Transaction` loại `DEPOSIT`.
   - Chỉ hỗ trợ `type`: "topup" hiện tại.
+
+---
+
+## 7. E-Wallet Operations (Ví điện tử)
+
+### Nạp tiền vào ví (Deposit)
+- **Mô tả**: Nạp tiền vào ví từ nguồn bên ngoài.
+- **Endpoint**: `POST /api/E-Wallet/deposits`
+- **Đầu vào (Request Body)**:
+  ```json
+  {
+    "walletId": 1,
+    "amount": 100000.0
+  }
+  ```
+- **Đầu ra**:
+  ```json
+  {
+    "message": "Deposit successful",
+    "newBalance": 1600000.0
+  }
+  ```
+- **Logic**: 
+  - Cộng tiền vào ví balance
+  - Tạo transaction record loại DEPOSIT
+
+### Xem thông tin ví
+- **Mô tả**: Lấy thông tin chi tiết của ví theo ID.
+- **Endpoint**: `GET /api/E-Wallet/deposits/wallet/{id}`
+- **Đầu ra**:
+  ```json
+  {
+    "id": 1,
+    "code": "WALLET001",
+    "currency": "VND",
+    "balance": 1500000.0,
+    "availableBalance": 1500000.0,
+    "status": "ACTIVE"
+  }
+  ```
+
+### Lịch sử nạp tiền gần đây
+- **Mô tả**: Lấy lịch sử các giao dịch nạp tiền gần đây của ví.
+- **Endpoint**: `GET /api/E-Wallet/deposits/wallet/{id}/recent-deposits`
+- **Đầu ra**:
+  ```json
+  [
+    {
+      "id": 1,
+      "amount": 500000.0,
+      "referenceId": "DEMO_DEPOSIT_1640995200000",
+      "status": "COMPLETED",
+      "createdAt": "2024-01-15T10:30:00"
+    }
+  ]
+  ```
+
+---
+
+## 8. User Profile & Account Management
+
+### Lấy thông tin người dùng hiện tại
+- **Mô tả**: Lấy thông tin chi tiết của người dùng đang đăng nhập.
+- **Endpoint**: `GET /api/me`
+- **Đầu vào**: Header `Authorization: Bearer <token>`
+- **Đầu ra**:
+  ```json
+  {
+    "id": 2,
+    "email": "user@vti.com",
+    "fullName": "Nguyen Van User",
+    "phone": "0987654321",
+    "username": "user",
+    "wallet": {
+      "id": 2,
+      "balance": 1500000.0,
+      "currency": "VND",
+      "status": "ACTIVE"
+    }
+  }
+  ```
+
+---
+
+## 9. Bank Account Management
+
+### Lấy danh sách tài khoản ngân hàng
+- **Mô tả**: Lấy danh sách các tài khoản ngân hàng của người dùng theo userId.
+- **Endpoint**: `GET /api/bank-account?userId={userId}`
+- **Đầu ra**:
+  ```json
+  [
+    {
+      "id": 1,
+      "code": "BANK001",
+      "bankCode": "TPB",
+      "bankName": "TPBank",
+      "accountNumber": "9876543210",
+      "accountName": "NGUYEN VAN USER",
+      "status": "ACTIVE",
+      "createdAt": "2024-01-01T00:00:00"
+    }
+  ]
+  ```
+
+---
+
+## 10. Error Responses
+
+### Common Error Format
+- **Đầu ra (Error Response)**:
+  ```json
+  {
+    "timestamp": "2024-01-15T10:30:00",
+    "status": 400,
+    "error": "Bad Request",
+    "message": "Invalid username or password",
+    "path": "/api/auth/login"
+  }
+  ```
+
+### Common Error Codes
+- `400 Bad Request`: Dữ liệu đầu vào không hợp lệ
+- `401 Unauthorized`: Token không hợp lệ hoặc hết hạn
+- `403 Forbidden`: Không có quyền truy cập
+- `404 Not Found`: Resource không tồn tại
+- `500 Internal Server Error`: Lỗi server
+
+---
+
+## 11. Security Notes
+
+- **JWT Token**: Có hiệu lực 15 ngày
+- **Password Encryption**: Sử dụng BCrypt
+- **PIN Generation**: Tự động tạo 6 chữ số ngẫu nhiên khi đăng ký
+- **Role-based Access**: USER, ADMIN, SUPPORT
+- **Transaction Security**: Sử dụng @Transactional và pessimistic locking
+
+---
+
+## 12. Database Schema Summary
+
+### Main Entities:
+- **users**: Thông tin người dùng
+- **wallets**: Ví điện tử (1-1 với users)
+- **transactions**: Lịch sử giao dịch
+- **bank_accounts**: Tài khoản ngân hàng liên kết
+- **cards**: Thẻ tín dụng/ghi nợ
+- **contacts**: Danh bạ chuyển tiền
+
+### Enums:
+- **Role**: USER, ADMIN, SUPPORT
+- **WalletStatus**: ACTIVE, FROZEN, CLOSED
+- **TransactionType**: DEPOSIT, WITHDRAW, TRANSFER_IN, TRANSFER_OUT
+- **TransactionStatus**: PENDING, COMPLETED, FAILED
+- **TransactionDirection**: IN, OUT
+- **BankAccountStatus**: ACTIVE, PENDING, REVOKED
+- **CardStatus**: ACTIVE, INACTIVE, LOCKED
+
+---
 

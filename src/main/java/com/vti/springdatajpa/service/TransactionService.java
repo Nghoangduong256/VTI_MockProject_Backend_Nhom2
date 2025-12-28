@@ -4,6 +4,8 @@ import com.vti.springdatajpa.dto.TransactionDTO;
 import com.vti.springdatajpa.dto.TransactionRequest;
 import com.vti.springdatajpa.dto.TransferRequest;
 import com.vti.springdatajpa.entity.*;
+import com.vti.springdatajpa.entity.enums.TransactionStatus;
+import com.vti.springdatajpa.entity.enums.TransactionType;
 import com.vti.springdatajpa.repository.TransactionRepository;
 import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
