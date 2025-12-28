@@ -2,6 +2,8 @@ package com.vti.springdatajpa.entity;
 import com.vti.springdatajpa.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 

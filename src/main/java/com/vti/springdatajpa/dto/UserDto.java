@@ -1,6 +1,6 @@
 package com.vti.springdatajpa.dto;
 
-import com.vti.springdatajpa.entity.Role;
+import com.vti.springdatajpa.entity.enums.Role;
 import com.vti.springdatajpa.entity.Wallet;
 import jakarta.persistence.*;
 import lombok.*;

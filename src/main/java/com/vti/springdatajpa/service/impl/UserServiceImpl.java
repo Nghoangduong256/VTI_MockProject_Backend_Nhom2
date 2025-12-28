@@ -1,11 +1,13 @@
 package com.vti.springdatajpa.service.impl;
 
 import com.vti.springdatajpa.dto.UserDto;
+import com.vti.springdatajpa.dto.UserOutputDTO;
 import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.vti.springdatajpa.service.ImageHandlerService;
 
@@ -35,7 +37,7 @@ public class UserServiceImpl implements UserService {
             dto.setLastName(parts.length > 1 ? parts[1] : "");
         }
 
-        dto.setUsername(user.getUsername());
+        dto.setUsername(user.getUserName());
         dto.setEmail(user.getEmail());
         dto.setAvatar(user.getAvatar());
         dto.setPhone(user.getPhone());
@@ -66,7 +68,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userDto.getUsername() != null && !userDto.getUsername().isBlank()) {
-            user.setUsername(userDto.getUsername());
+            user.setUserName(userDto.getUsername());
         }
 
         if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
@@ -147,6 +149,18 @@ public class UserServiceImpl implements UserService {
         if (mimeType == null || !mimeType.startsWith("image/")) {
             throw new IllegalArgumentException("Invalid image format");
         }
+    }
+
+    public UserOutputDTO me() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserOutputDTO userOutputDTO = new UserOutputDTO();
+        userOutputDTO.setId(user.getId());
+        userOutputDTO.setEmail(user.getEmail());
+        userOutputDTO.setFullName(user.getFullName());
+        userOutputDTO.setPhone(user.getPhone());
+        userOutputDTO.setUsername(user.getUserName());
+        userOutputDTO.setWallet(user.getWallet());
+        return userOutputDTO;
     }
 
 }
