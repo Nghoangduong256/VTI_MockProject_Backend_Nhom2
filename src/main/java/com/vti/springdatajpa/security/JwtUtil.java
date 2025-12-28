@@ -14,7 +14,7 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private static final long EXPIRATION = 1000 * 60 * 60; // 1 hour
+    private static final long EXPIRATION = 1000 * 60 * 60 * 24 * 15; // 15 days
 
     @Value("${jwt.expiration}")
     private long expirationSeconds;
@@ -27,7 +27,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(user.getId().toString())
-                .claim("username", user.getUsername())
+                .claim("username", user.getUserName())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))

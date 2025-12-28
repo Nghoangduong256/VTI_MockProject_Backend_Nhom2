@@ -1,41 +1,31 @@
 package com.vti.springdatajpa.controller;
 
-import com.vti.springdatajpa.dto.UserDto;
+import com.vti.springdatajpa.dto.UserProfileDTO;
 import com.vti.springdatajpa.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
-
-@CrossOrigin("*")
 @RestController
-@RequestMapping(value = "api/v1/profiles")
+@RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    //Get by id
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getProfileById(@PathVariable(name = "id") UUID id) {
-        System.out.println("ID from request = " + id);
-        return new ResponseEntity<>(userService.getUserById(id), HttpStatus.OK);
-    }
-
-    //Update profile
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateProfile(@PathVariable(name = "id") UUID id, @RequestBody UserDto userDto) {
-        userService.updateUser(id, userDto);
-        return new ResponseEntity<>("Update user success", HttpStatus.OK);
-    }
-
-    //Delete profile
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProfile(@PathVariable(name = "id") UUID id) {
-        userService.deleteUserById(id);
-        return new ResponseEntity<>("Delete user success", HttpStatus.OK);
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileDTO> getProfile() {
+        // Assuming the principal is the User object as set in JwtAuthenticationFilter
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userName;
+        if (principal instanceof com.vti.springdatajpa.entity.User) {
+            userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
+        } else {
+            userName = principal.toString();
+        }
+        return ResponseEntity.ok(userService.getProfile(userName));
     }
 }

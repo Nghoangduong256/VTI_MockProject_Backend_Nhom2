@@ -1,15 +1,29 @@
 package com.vti.springdatajpa.service;
 
+import com.vti.springdatajpa.dto.UserProfileDTO;
 import com.vti.springdatajpa.dto.UserDto;
 import com.vti.springdatajpa.entity.User;
+import com.vti.springdatajpa.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+@Service
+@RequiredArgsConstructor
+public class UserService {
 
-public interface UserService {
-    public UserDto getUserById(UUID id);
+    private final UserRepository userRepository;
 
-    public void updateUser(UUID id, UserDto userDto);
+    public UserProfileDTO getProfile(String userName) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    public void deleteUserById(UUID id);
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setFullName(user.getFullName());
+        dto.setEmail(user.getEmail());
+        dto.setUserName(user.getUserName());
+        dto.setAvatarUrl(user.getAvatarUrl());
+        dto.setMembership(user.getMembership());
 
+        return dto;
+    }
 }
