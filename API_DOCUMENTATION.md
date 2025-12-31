@@ -1,20 +1,80 @@
-# Tài liệu API (API Documentation)
+# API Documentation - E-Wallet Backend System
 
-Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống, bao gồm endpoint, dữ liệu đầu vào/đầu ra, và logic xử lý.
+**Last Updated**: 2025-01-01
+**Version**: 2.2
 
-**Lưu ý**: Tất cả các lỗi code đã được fix và cập nhật:
-- Import errors đã được sửa
-- Method names đã được chuẩn hóa
-- Interface-implementation mismatch đã được fix
+**Code Fixes Applied**:
+- Fixed ambiguous mapping error between AuthController and RegisterController
+- Removed duplicate RegisterController, kept AuthController as single entry point
+- Updated register endpoint to use RegisterForm DTO instead of User entity
+- Added ModelMapper for DTO to Entity conversion
+- **Fixed QrWithAmountRequest - removed note field as requested**
+- **Fixed POST /api/qr/wallet/with-amount to return proper DTO instead of String**
+- **Ensured phone number = account number logic throughout system**
+- **QR Base64 format standardized with data:image/png prefix**
 - Package structure đã được đồng bộ
 - Dependency injection style đã được chuẩn hóa
+
+**New APIs Added**: QR Code APIs, Wallet Info APIs, Incoming Transactions APIs
+- QR Code generation và download
+- Wallet information display
+- Transaction history for widgets
+- QR image reading to JSON conversion
+
+**Key Features**:
+- **Phone Number = Account Number** throughout entire system
+- **QR Code contains accountNumber and amount (no note)**
+- **Base64 QR format**: `data:image/png;base64,iVBORw0KGgo...`
+- **Consistent DTO responses across all APIs**
+
+---
+
+## API Summary (Tổng quan tất cả APIs)
+
+### Authentication APIs
+- `POST /api/auth/register` - Đăng ký tài khoản
+- `POST /api/auth/login` - Đăng nhập
+
+### User & Profile APIs  
+- `GET /api/user/profile` - Lấy thông tin cá nhân
+- `GET /api/me` - Lấy thông tin người dùng hiện tại
+
+### Wallet APIs
+- `GET /api/wallet/balance` - Xem số dư
+- `GET /api/wallet/me` - Lấy thông tin ví đầy đủ **[NEW]**
+
+### QR Code APIs **[NEW]**
+- `GET /api/qr/wallet` - Tạo QR Code cho ví (Base64)
+- `GET /api/qr/wallet/download` - Tải QR Image
+- `POST /api/qr/wallet/with-amount` - Tạo QR với số tiền cố định
+- `POST /api/qr/resolve` - Giải mã QR Payload
+- `POST /api/qr/read-image` - Đọc ảnh QR thành JSON **[NEW]**
+
+### Transaction APIs
+- `GET /api/transactions` - Lịch sử giao dịch (phân trang)
+- `GET /api/transactions/incoming` - Giao dịch đến gần đây **[NEW]**
+- `POST /api/transactions/transfer` - Chuyển tiền
+- `POST /api/transactions` - Nạp tiền (topup)
+
+### E-Wallet Operations
+- `POST /api/E-Wallet/deposits` - Nạp tiền vào ví
+- `GET /api/E-Wallet/deposits/wallet/{id}` - Xem thông tin ví
+- `GET /api/E-Wallet/deposits/wallet/{id}/recent-deposits` - Lịch sử nạp tiền gần đây
+
+### Card & Bank Account APIs
+- `GET /api/cards` - Danh sách thẻ
+- `POST /api/cards` - Thêm thẻ mới
+- `GET /api/bank-account` - Danh sách tài khoản ngân hàng
+
+### Contact APIs
+- `GET /api/contacts/frequent` - Danh sách chuyển tiền nhanh
 
 ---
 
 ## 1. Authentication (Xác thực)
 
 ### Đăng ký tài khoản (Register)
-- **Mô tả**: Tạo tài khoản người dùng mới.
+- **Mô tả**: Tạo tài khoản người dùng mới với số tài khoản tự động từ số điện thoại.
 - **Endpoint**: `POST /api/auth/register`
 - **Đầu vào (Request Body)**:
   ```json
@@ -27,11 +87,23 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
   }
   ```
   *(Lưu ý: Trường `passwordHash` chứa mật khẩu dạng raw text từ client, server sẽ mã hóa sau)*
-- **Đầu ra**: 200 OK (Empty Body)
+- **Đầu ra**:
+  ```json
+  {
+    "message": "User registered successfully",
+    "userId": 123,
+    "accountNumber": "0987654321",
+    "walletId": "WALLET123"
+  }
+  ```
 - **Logic**:
   - Kiểm tra trùng username, email, phone.
   - Mã hóa mật khẩu.
   - Tạo User mới với role USER.
+  - **Tự động tạo số tài khoản = số điện thoại đăng ký**
+  - Tạo Wallet liên kết với User.
+  - Trả về thông tin tài khoản vừa tạo.
+- **Data Transfer**: Sử dụng `RegisterForm` DTO thay vì `User` entity trực tiếp.
 
 ### Đăng nhập (Login)
 - **Mô tả**: Xác thực người dùng và trả về JWT token để truy cập các API khác.
@@ -103,7 +175,185 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 4. Cards (Thẻ ngân hàng)
+## 4. QR Code APIs
+
+### Lấy thông tin ví đầy đủ
+- **Mô tả**: Lấy thông tin chi tiết ví của người dùng hiện tại.
+- **Endpoint**: `GET /api/wallet/me`
+- **Đầu vào**: Header `Authorization: Bearer <token>`
+- **Đầu ra**:
+  ```json
+  {
+    "walletId": "WALLET001",
+    "accountName": "Nguyen Van User",
+    "accountNumber": "0987654321",
+    "currency": "VND",
+    "balance": 1500000.0
+  }
+  ```
+- **Logic**:
+  - Lấy username từ SecurityContext
+  - Join users → wallets
+  - Mapping DTO với account number (số điện thoại đăng ký)
+  - Không trả internal ID
+
+### Tạo QR Code cho ví (Base64)
+- **Mô tả**: Tạo QR code chứa thông tin nhận tiền, trả về dạng Base64.
+- **Endpoint**: `GET /api/qr/wallet`
+- **Đầu vào**: Header `Authorization: Bearer <token>`
+- **QR Payload Format**:
+  ```
+  walletapp://pay?version=1&walletId=WALLET001&name=Nguyen%20Van%20User&accountNumber=0987654321
+  ```
+- **Đầu ra**:
+  ```json
+  {
+    "walletId": "WALLET001",
+    "accountName": "Nguyen Van User",
+    "accountNumber": "0987654321",
+    "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+  }
+  ```
+- **Logic**:
+  - Auth user từ JWT token
+  - Lấy wallet information với account number (số điện thoại)
+  - Build payload string bao gồm accountNumber
+  - Generate QR image và encode Base64 với prefix `data:image/png;base64,`
+
+### Tải QR Image
+- **Mô tả**: Tải QR code dạng file ảnh PNG.
+- **Endpoint**: `GET /api/qr/wallet/download`
+- **Đầu ra**: 
+  - Content-Type: `image/png`
+  - Content-Disposition: `attachment; filename="wallet-qr.png"`
+  - Binary image data
+- **Logic**:
+  - Reuse logic tạo QR
+  - Stream image về client (không Base64)
+
+### Tạo QR với số tiền cố định
+- **Mô tả**: Tạo QR code có kèm số tiền.
+- **Endpoint**: `POST /api/qr/wallet/with-amount`
+- **Đầu vào (Request Body)**:
+  ```json
+  {
+    "amount": 50000
+  }
+  ```
+- **QR Payload**:
+  ```
+  walletapp://pay?version=1&walletId=WALLET001&name=Nguyen%20Van%20User&accountNumber=0987654321&amount=50000
+  ```
+- **Đầu ra**:
+  ```json
+  {
+    "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+  }
+  ```
+- **Logic**:
+  - Validate amount > 0
+  - **Không cần ghi chú (note)**
+  - Generate QR runtime với accountNumber và amount
+  - Return proper DTO with qrBase64 field
+
+### Giải mã QR Payload
+- **Mô tả**: Giải mã và xác thực thông tin từ QR code khi scan.
+- **Endpoint**: `POST /api/qr/resolve`
+- **Đầu vào (Request Body)**:
+  ```json
+  {
+    "qrPayload": "walletapp://pay?walletId=WALLET001&accountNumber=0987654321&amount=50000"
+  }
+  ```
+- **Đầu ra**:
+  ```json
+  {
+    "walletId": "WALLET001",
+    "receiverName": "Nguyen Van User",
+    "accountNumber": "0987654321",
+    "amount": 50000,
+    "currency": "VND",
+    "valid": true
+  }
+  ```
+- **Logic**:
+  - Parse payload parameters
+  - Validate scheme và version
+  - Check wallet tồn tại và ACTIVE
+  - Return info bao gồm accountNumber
+
+### Đọc ảnh QR thành JSON
+- **Mô tả**: Đọc file ảnh QR (.png) và chuyển thành thông tin JSON để chuyển khoản.
+- **Endpoint**: `POST /api/qr/read-image`
+- **Đầu vào**: Multipart form data với file ảnh QR
+  ```
+  Content-Type: multipart/form-data
+  file: [QR image file .png]
+  ```
+- **Đầu ra**:
+  ```json
+  {
+    "walletId": "WALLET001",
+    "receiverName": "Nguyen Van User",
+    "accountNumber": "0987654321",
+    "amount": 50000,
+    "currency": "VND",
+    "valid": true,
+    "transferReady": true
+  }
+  ```
+- **Logic**:
+  - Nhận file ảnh QR từ client
+  - Decode QR image để extract payload
+  - Parse và validate payload
+  - Return JSON thông tin sẵn sàng để chuyển khoản
+  - Nếu amount có sẵn, set transferReady = true
+
+---
+
+## 5. Incoming Transactions (Widget)
+
+### Lấy giao dịch đến gần đây
+- **Mô tả**: Lấy danh sách giao dịch đến cho widget bên phải.
+- **Endpoint**: `GET /api/transactions/incoming?limit=5`
+- **Đầu vào**: 
+  - Query param `limit` (mặc định 5)
+  - Header `Authorization: Bearer <token>`
+- **Đầu ra**:
+  ```json
+  [
+    {
+      "id": 1,
+      "type": "TRANSFER_IN",
+      "amount": 50000.0,
+      "date": "2024-01-15T10:30:00",
+      "status": "COMPLETED",
+      "description": "Chuyển tiền vào"
+    },
+    {
+      "id": 2,
+      "type": "DEPOSIT",
+      "amount": 100000.0,
+      "date": "2024-01-14T15:20:00",
+      "status": "COMPLETED",
+      "description": "Nạp tiền vào ví"
+    }
+  ]
+  ```
+- **Logic**:
+  - Get user from JWT token
+  - Find wallet by user id
+  - Filter transactions with direction = IN
+  - Order by createdAt DESC
+  - Apply limit parameter
+  - Map description theo transaction type:
+    - `TRANSFER_IN` → "Chuyển tiền vào"
+    - `DEPOSIT` → "Nạp tiền vào ví"
+    - Default → "Giao dịch vào"
+
+---
+
+## 6. Cards (Thẻ ngân hàng)
 
 ### Danh sách thẻ
 - **Mô tả**: Lấy danh sách các thẻ/tài khoản ngân hàng đã liên kết.
@@ -146,7 +396,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 5. Contacts (Danh bạ thụ hưởng)
+## 7. Contacts (Danh bạ thụ hưởng)
 
 ### Danh sách chuyển tiền nhanh
 - **Mô tả**: Lấy danh sách người nhận thường xuyên (Frequent Contacts) cho chức năng Quick Transfer.
@@ -169,7 +419,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 6. Transactions (Giao dịch)
+## 8. Transactions (Giao dịch)
 
 ### Lịch sử giao dịch
 - **Mô tả**: Lấy danh sách giao dịch có phân trang.
@@ -233,7 +483,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 7. E-Wallet Operations (Ví điện tử)
+## 9. E-Wallet Operations (Ví điện tử)
 
 ### Nạp tiền vào ví (Deposit)
 - **Mô tả**: Nạp tiền vào ví từ nguồn bên ngoài.
@@ -289,7 +539,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 8. User Profile & Account Management
+## 10. User Profile & Account Management
 
 ### Lấy thông tin người dùng hiện tại
 - **Mô tả**: Lấy thông tin chi tiết của người dùng đang đăng nhập.
@@ -314,7 +564,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 9. Bank Account Management
+## 11. Bank Account Management
 
 ### Lấy danh sách tài khoản ngân hàng
 - **Mô tả**: Lấy danh sách các tài khoản ngân hàng của người dùng theo userId.
@@ -337,7 +587,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 10. Error Responses
+## 12. Error Responses
 
 ### Common Error Format
 - **Đầu ra (Error Response)**:
@@ -360,7 +610,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 11. Security Notes
+## 13. Security Notes
 
 - **JWT Token**: Có hiệu lực 15 ngày
 - **Password Encryption**: Sử dụng BCrypt
@@ -370,7 +620,7 @@ Tài liệu này tổng hợp danh sách các API hiện có trong hệ thống,
 
 ---
 
-## 12. Database Schema Summary
+## 14. Database Schema Summary
 
 ### Main Entities:
 - **users**: Thông tin người dùng
