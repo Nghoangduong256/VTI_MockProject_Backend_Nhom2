@@ -1,17 +1,21 @@
 package com.vti.springdatajpa.service;
 
+import com.vti.springdatajpa.dto.UserProfileDTO;
 import com.vti.springdatajpa.dto.UserDto;
 import com.vti.springdatajpa.entity.User;
+import com.vti.springdatajpa.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+
 
 public interface UserService {
-    public UserDto getUserById(UUID id);
+    public UserDto getUserById(Integer id);
 
-    public void updateUser(UUID id, UserDto userDto);
+    public void updateUser(Integer id, UserDto userDto);
 
-    public void updateUserAvatar(UUID id, String avatarUrl);
+    public void updateUserAvatar(Integer id, String avatarUrl);
 
-    public void deleteUserById(UUID id);
+    public void deleteUserById(Integer id);
 
 }

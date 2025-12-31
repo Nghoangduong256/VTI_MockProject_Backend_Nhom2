@@ -1,4 +1,5 @@
 package com.vti.springdatajpa.service.impl;
+
 import com.vti.springdatajpa.dto.LoginRequest;
 import com.vti.springdatajpa.dto.LoginResponse;
 import com.vti.springdatajpa.entity.User;
@@ -20,7 +21,7 @@ public class AuthServiceImpl implements AuthService {
 
     public LoginResponse login(LoginRequest request) {
 
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUserName(request.getUserName())
                 .orElseThrow(() -> new AuthException("Invalid username or password"));
 
         if (!user.isActive()) {
@@ -36,8 +37,11 @@ public class AuthServiceImpl implements AuthService {
         return new LoginResponse(
                 token,
                 "Bearer",
-                jwtUtil.getExpirationSeconds()
-        );
+                jwtUtil.getExpirationSeconds(),
+                user.getUserName(),
+                user.getEmail(),
+                user.getFullName(),
+                java.util.Collections.singletonList(user.getRole().name()));
 
     }
 }
