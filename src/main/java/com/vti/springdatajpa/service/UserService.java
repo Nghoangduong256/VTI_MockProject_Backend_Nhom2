@@ -13,8 +13,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     public UserProfileDTO getProfile(String userName) {
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = findUserByUsernameOrEmail(userName);
 
         UserProfileDTO dto = new UserProfileDTO();
         dto.setFullName(user.getFullName());
@@ -24,5 +23,30 @@ public class UserService {
         dto.setMembership(user.getMembership());
 
         return dto;
+    }
+
+    /**
+     * Flexible user lookup - tries username first, then email
+     * This fixes JWT identity mismatch issues
+     */
+    private User findUserByUsernameOrEmail(String identity) {
+        System.out.println("UserService - Looking for user with identity: " + identity);
+        
+        // Try username first
+        User user = userRepository.findByUserName(identity).orElse(null);
+        if (user != null) {
+            System.out.println("UserService - Found user by username: " + identity);
+            return user;
+        }
+        
+        // Try email
+        user = userRepository.findByEmail(identity).orElse(null);
+        if (user != null) {
+            System.out.println("UserService - Found user by email: " + identity);
+            return user;
+        }
+        
+        System.out.println("UserService - User not found with identity: " + identity);
+        throw new RuntimeException("User not found with identity: " + identity);
     }
 }

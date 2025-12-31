@@ -37,6 +37,8 @@ public class Wallet {
     @Enumerated(EnumType.STRING)
     private WalletStatus status;
 
+    private String accountNumber; // Số tài khoản = số điện thoại
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -18,14 +18,21 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile() {
-        // Assuming the principal is the User object as set in JwtAuthenticationFilter
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println("User Profile - JWT identity: " + principal);
+        System.out.println("Identity type: " + principal.getClass().getName());
+        
         String userName;
         if (principal instanceof com.vti.springdatajpa.entity.User) {
             userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
+            System.out.println("Extracted username from User object: " + userName);
+        } else if (principal instanceof String) {
+            userName = (String) principal;
+            System.out.println("Using string identity: " + userName);
         } else {
-            userName = principal.toString();
+            throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
         }
+        
         return ResponseEntity.ok(userService.getProfile(userName));
     }
 }
