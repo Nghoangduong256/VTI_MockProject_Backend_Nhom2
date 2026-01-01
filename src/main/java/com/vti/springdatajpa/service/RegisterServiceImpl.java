@@ -1,7 +1,10 @@
 package com.vti.springdatajpa.service;
 
 import com.vti.springdatajpa.entity.User;
+import com.vti.springdatajpa.entity.Wallet;
+import com.vti.springdatajpa.entity.enums.WalletStatus;
 import com.vti.springdatajpa.repository.RegisterRepository;
+import com.vti.springdatajpa.repository.WalletRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +15,12 @@ public class RegisterServiceImpl implements RegisterService {
 
     private final RegisterRepository registerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WalletRepository walletRepository;
 
-    public RegisterServiceImpl(RegisterRepository registerRepository, PasswordEncoder passwordEncoder) {
+    public RegisterServiceImpl(RegisterRepository registerRepository, PasswordEncoder passwordEncoder, WalletRepository walletRepository) {
         this.registerRepository = registerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.walletRepository = walletRepository;
     }
 
     @Override
@@ -45,6 +50,23 @@ public class RegisterServiceImpl implements RegisterService {
         user.setRole(com.vti.springdatajpa.entity.enums.Role.USER);
         // set createdAt
         user.setCreatedAt(java.time.LocalDateTime.now());
-        return registerRepository.save(user);
+        
+        // Lưu user trước
+        User savedUser = registerRepository.save(user);
+        
+        // Tạo wallet với account number = phone
+        Wallet wallet = new Wallet();
+        wallet.setUser(savedUser);
+        wallet.setCode("WALLET" + savedUser.getId());
+        wallet.setCurrency("VND");
+        wallet.setBalance(0.0);
+        wallet.setAvailableBalance(0.0);
+        wallet.setStatus(WalletStatus.ACTIVE);
+        wallet.setAccountNumber(user.getPhone()); // Số tài khoản = số điện thoại
+        wallet.setCreatedAt(java.time.LocalDateTime.now());
+        
+        walletRepository.save(wallet);
+        
+        return savedUser;
     }
 }
