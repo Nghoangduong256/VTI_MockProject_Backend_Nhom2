@@ -21,4 +21,6 @@ public interface WalletRepository extends JpaRepository<Wallet, Integer> {
 
     // Bảo mật: đảm bảo ví thuộc user
     Optional<Wallet> findByIdAndUserId(Integer id, Integer userId);
+
+    Optional<Wallet> findByUser_UserName(String username);
 }
