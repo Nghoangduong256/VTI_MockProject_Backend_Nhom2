@@ -41,7 +41,10 @@ public class AuthServiceImpl implements AuthService {
                 user.getUserName(),
                 user.getEmail(),
                 user.getFullName(),
-                java.util.Collections.singletonList(user.getRole().name()));
+                java.util.Collections.singletonList(user.getRole().name()),
+                user.getAvatar(),
+                user.getMembership()
+                );
 
     }
 }
