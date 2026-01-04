@@ -2,6 +2,7 @@ package com.vti.springdatajpa.service;
 
 import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.entity.Wallet;
+import com.vti.springdatajpa.entity.enums.Role;
 import com.vti.springdatajpa.entity.enums.WalletStatus;
 import com.vti.springdatajpa.repository.RegisterRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
@@ -41,19 +42,20 @@ public class RegisterServiceImpl implements RegisterService {
 
         // mã hoá password
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+
         int pin = 100000 + new Random().nextInt(900000);
         user.setPinHash(String.valueOf(pin));
         user.setActive(true);
-        user.setRole(com.vti.springdatajpa.entity.enums.Role.USER);
+        user.setRole(Role.USER);
         user.setCreatedAt(java.time.LocalDateTime.now());
 
-        // Lưu user
+
+        // Lưu user trước
         User savedUser = registerRepository.save(user);
 
-        // Tạo wallet
         Wallet wallet = new Wallet();
         wallet.setUser(savedUser);
-        wallet.setCode("WALLET" + savedUser.getId());
+        wallet.setCode("WALLET" + savedUser.getId()); // mã wallet
         wallet.setCurrency("VND");
         wallet.setBalance(0.0);
         wallet.setAvailableBalance(0.0);
