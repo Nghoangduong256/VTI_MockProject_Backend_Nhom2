@@ -2,6 +2,7 @@ package com.vti.springdatajpa.service;
 
 import com.vti.springdatajpa.dto.UserProfileDTO;
 import com.vti.springdatajpa.dto.UserDto;
+import com.vti.springdatajpa.dto.UserProfileUpdateDTO;
 import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +11,9 @@ import org.springframework.stereotype.Service;
 
 
 public interface UserService {
-    public UserDto getUserById(Integer id);
+    public UserProfileDTO getProfile(String username);
 
-    public void updateUser(Integer id, UserDto userDto);
+    void updateProfile(String identity, UserProfileUpdateDTO dto);
 
-    public void updateUserAvatar(Integer id, String avatarUrl);
-
-    public void deleteUserById(Integer id);
-
+    void updateAvatar(String identity, String avatarBase64);
 }

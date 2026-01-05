@@ -64,6 +64,8 @@ public class User {
     private Wallet wallet;
 
     private String avatarUrl;
+
+    @Column(name = "membership")
     private String membership; // e.g., "Silver", "Gold", "Platinum"
 
 }

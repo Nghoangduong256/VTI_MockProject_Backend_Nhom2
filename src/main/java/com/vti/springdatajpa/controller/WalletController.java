@@ -17,7 +17,9 @@ public class WalletController {
 
     @GetMapping("/balance")
     public ResponseEntity<WalletBalanceDTO> getBalance() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(walletService.getBalance(username));
+        Object identity = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println("Wallet Balance - JWT identity: " + identity);
+        System.out.println("Identity type: " + identity.getClass().getName());
+        return ResponseEntity.ok(walletService.getBalance(identity));
     }
 }
