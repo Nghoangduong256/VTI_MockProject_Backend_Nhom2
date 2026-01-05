@@ -10,4 +10,5 @@ public interface DepositService {
     public Wallet deposit(DepositRequest request);
     Wallet getWalletById(Integer id);
     public List<DepositHistoryDTO> getRecentDeposits(Integer walletId);
+    Wallet getWalletByUserName(String userName);
 }
