@@ -1,6 +1,7 @@
 package com.vti.springdatajpa.repository;
 
 import com.vti.springdatajpa.entity.User;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
