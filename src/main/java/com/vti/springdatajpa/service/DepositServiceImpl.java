@@ -87,4 +87,17 @@ public class DepositServiceImpl implements DepositService {
                 .toList();
     }
 
+    @Override
+    public Wallet getWalletByUserName(String userName) {
+        return walletRepository.findByUser_UserName(userName)
+                .orElseThrow(() -> new RuntimeException("Wallet not found for user: " + userName));
+
+    }
+
+//    @Override
+//    public Wallet getWalletByUserId(Integer userId) {
+//        return walletRepository.findByUserId(userId)
+//                .orElseThrow(() -> new RuntimeException("Wallet not found for user id: " + userId));
+//    }
+
 }

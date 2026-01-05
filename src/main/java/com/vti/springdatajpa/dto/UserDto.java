@@ -30,4 +30,7 @@ public class UserDto {
     private LocalDate dateOfBirth;
 
     private String address;
+
+    private String membership;
+
 }

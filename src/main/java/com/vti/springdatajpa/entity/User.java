@@ -41,22 +41,31 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "pin_hash")
     private String pinHash;
 
+    @Column(name = "is_active")
     private boolean isActive;
+
+    @Column(name = "is_verified")
     private boolean isVerified;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 20, nullable = false)
     private Role role;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @OneToOne(mappedBy = "user")
     private Wallet wallet;
 
     private String avatarUrl;
+
+    @Column(name = "membership")
     private String membership; // e.g., "Silver", "Gold", "Platinum"
 
 }

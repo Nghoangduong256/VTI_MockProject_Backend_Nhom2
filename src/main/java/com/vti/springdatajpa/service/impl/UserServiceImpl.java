@@ -2,6 +2,8 @@ package com.vti.springdatajpa.service.impl;
 
 import com.vti.springdatajpa.dto.UserDto;
 import com.vti.springdatajpa.dto.UserOutputDTO;
+import com.vti.springdatajpa.dto.UserProfileDTO;
+import com.vti.springdatajpa.dto.UserProfileUpdateDTO;
 import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.service.UserService;
@@ -14,6 +16,7 @@ import com.vti.springdatajpa.service.ImageHandlerService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -23,23 +26,36 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     @Override
-    public UserDto getUserById(Integer id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found with id = " + id));
-        UserDto dto = new UserDto();
+    public UserProfileDTO getProfile(String username) {
+        User user = findUserByUsernameOrEmail(username);
+        UserProfileDTO dto = new UserProfileDTO();
 
+        // Identity
+        dto.setUserName(user.getUserName());
+        dto.setEmail(user.getEmail());
+
+        // Full name → First / Last
         if (user.getFullName() != null) {
             String[] parts = user.getFullName().split(" ", 2);
             dto.setFirstName(parts[0]);
             dto.setLastName(parts.length > 1 ? parts[1] : "");
         }
 
-        dto.setUsername(user.getUserName());
-        dto.setEmail(user.getEmail());
-        dto.setAvatar(user.getAvatar());
+        // Avatar (Base64 + fallback URL)
+        dto.setAvatar(
+                user.getAvatar() != null
+                        ? "data:image/png;base64," + user.getAvatar()
+                        : null
+        );
+
+        dto.setAvatarUrl(user.getAvatarUrl());
+
+        // Status
+        dto.setVerified(user.isVerified());
+        dto.setMembership(user.getMembership());
+
+        // Contact & personal info
         dto.setPhone(user.getPhone());
         dto.setDateOfBirth(user.getDateOfBirth());
         dto.setAddress(user.getAddress());
@@ -48,63 +64,71 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(Integer id, UserDto userDto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id = " + id));
+    public void updateProfile(String identity, UserProfileUpdateDTO dto) {
+        User user = findUserByUsernameOrEmail(identity);
 
-        // Thiết lập những trường cần cập nhật
-        if ((userDto.getFirstName() != null && !userDto.getFirstName().isBlank())
-                || (userDto.getLastName() != null && !userDto.getLastName().isBlank())) {
-
-            String firstName = userDto.getFirstName() != null
-                    ? userDto.getFirstName().trim()
-                    : "";
-
-            String lastName = userDto.getLastName() != null
-                    ? userDto.getLastName().trim()
-                    : "";
-
+        // Update fullName từ first + last
+        if (dto.getFirstName() != null || dto.getLastName() != null) {
+            String firstName = dto.getFirstName() != null ? dto.getFirstName() : "";
+            String lastName = dto.getLastName() != null ? dto.getLastName() : "";
             user.setFullName((firstName + " " + lastName).trim());
         }
 
-        if (userDto.getUsername() != null && !userDto.getUsername().isBlank()) {
-            user.setUserName(userDto.getUsername());
-        }
-
-        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
-            user.setEmail(userDto.getEmail());
-        }
-
-        if (userDto.getPhone() != null && !userDto.getPhone().isBlank()) {
-            user.setPhone(userDto.getPhone());
-        }
-
-        if (userDto.getDateOfBirth() != null) {
-            user.setDateOfBirth(userDto.getDateOfBirth());
-        }
-
-        if (userDto.getAddress() != null && !userDto.getAddress().isBlank()) {
-            user.setAddress(userDto.getAddress());
-        }
+        user.setPhone(dto.getPhone());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        user.setAddress(dto.getAddress());
+        user.setUpdatedAt(LocalDateTime.now());
 
         userRepository.save(user);
     }
 
     @Override
-    public void updateUserAvatar(Integer id, String avatarUrl) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setAvatar(avatarUrl);
+    public void updateAvatar(String identity, String avatarBase64) {
+        User user = findUserByUsernameOrEmail(identity);
+
+        if (avatarBase64 == null || avatarBase64.isBlank()) {
+            throw new IllegalArgumentException("Avatar data is empty");
+        }
+
+        // 🚨 CHẶN TRÙNG PREFIX
+        if (avatarBase64.startsWith("data:image")) {
+            avatarBase64 = avatarBase64.substring(
+                    avatarBase64.indexOf(",") + 1
+            );
+        }
+
+        // avatarBase64 là base64 thuần (FE đã bỏ prefix)
+        user.setAvatar(avatarBase64);
+        user.setUpdatedAt(LocalDateTime.now());
+
         userRepository.save(user);
     }
 
-    @Override
-    public void deleteUserById(Integer id) {
-        if (userRepository.existsById(id)){
-            userRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("User not found");
+    /**
+     * Flexible user lookup - tries username first, then email
+     * This fixes JWT identity mismatch issues
+     */
+    private User findUserByUsernameOrEmail(String identity) {
+        System.out.println("UserService - Looking for user with identity: " + identity);
+
+        // Try username first
+        User user = userRepository.findByUserName(identity).orElse(null);
+        if (user != null) {
+            System.out.println("UserService - Found user by username: " + identity);
+            return user;
         }
+
+        // Try email
+        user = userRepository.findByEmail(identity).orElse(null);
+        if (user != null) {
+            System.out.println("UserService - Found user by email: " + identity);
+            return user;
+        }
+
+        System.out.println("UserService - User not found with identity: " + identity);
+        throw new RuntimeException("User not found with identity: " + identity);
     }
+
 
     public void updateAvatar(Integer userId, String avatarBase64) {
         User user = userRepository.findById(userId)
@@ -162,5 +186,6 @@ public class UserServiceImpl implements UserService {
         userOutputDTO.setWallet(user.getWallet());
         return userOutputDTO;
     }
+
 
 }
