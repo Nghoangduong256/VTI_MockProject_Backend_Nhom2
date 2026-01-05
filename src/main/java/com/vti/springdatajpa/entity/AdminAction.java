@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "admin_actions")
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 public class AdminAction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Integer id;
 
     private Integer adminId;
@@ -33,3 +34,4 @@ public class AdminAction {
 
     private LocalDateTime createdAt;
 }
+
