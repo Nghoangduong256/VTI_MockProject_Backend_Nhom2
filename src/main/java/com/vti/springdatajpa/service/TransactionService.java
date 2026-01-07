@@ -55,8 +55,8 @@ public class TransactionService {
                 Wallet senderWallet = walletRepository.findByUserId(sender.getId())
                                 .orElseThrow(() -> new RuntimeException("Sender wallet not found"));
 
-                if (senderWallet.getBalance() < request.getAmount()) {
-                        throw new RuntimeException("Insufficient balance");
+                if (senderWallet.getAvailableBalance() < request.getAmount()) {
+                        throw new RuntimeException("Insufficient available balance");
                 }
 
                 User receiver = userRepository.findById(request.getToUserId())
@@ -65,9 +65,11 @@ public class TransactionService {
                                 .orElseThrow(() -> new RuntimeException("Receiver wallet not found"));
 
                 senderWallet.setBalance(senderWallet.getBalance() - request.getAmount());
+                senderWallet.setAvailableBalance(senderWallet.getAvailableBalance() - request.getAmount());
                 walletRepository.save(senderWallet);
 
                 receiverWallet.setBalance(receiverWallet.getBalance() + request.getAmount());
+                receiverWallet.setAvailableBalance(receiverWallet.getAvailableBalance() + request.getAmount());
                 walletRepository.save(receiverWallet);
 
                 Transaction txOut = new Transaction();
@@ -96,6 +98,7 @@ public class TransactionService {
                                         .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
                         wallet.setBalance(wallet.getBalance() + request.getAmount());
+                        wallet.setAvailableBalance(wallet.getAvailableBalance() + request.getAmount());
                         walletRepository.save(wallet);
 
                         Transaction tx = new Transaction();
