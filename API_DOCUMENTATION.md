@@ -537,13 +537,13 @@
   ```json
   {
     "cardId": 1,
-    "amount": 50000,
+    "amount": 50000.50,
     "description": "Nạp tiền từ thẻ VCB"
   }
   ```
 - **Validation Rules**:
   - `cardId`: Required, phải thuộc về user đang đăng nhập
-  - `amount`: Required, phải > 0, minimum 1,000 VND, maximum 5,000,000 VND
+  - `amount`: Required, phải > 0, maximum 5,000,000 USD
   - Card phải ở trạng thái ACTIVE
   - Card balance phải >= amount
   - Wallet phải ở trạng thái ACTIVE
@@ -553,11 +553,11 @@
     "transactionId": 123,
     "cardId": 1,
     "cardNumber": "**** **** **** 1234",
-    "amount": 50000,
-    "previousCardBalance": 100000.0,
-    "newCardBalance": 50000.0,
-    "previousWalletBalance": 100000.0,
-    "newWalletBalance": 150000.0,
+    "amount": 50000.50,
+    "previousCardBalance": 1000000.00,
+    "newCardBalance": 950000.00,
+    "previousWalletBalance": 1000000.00,
+    "newWalletBalance": 1050000.50,
     "description": "Nạp tiền từ thẻ VCB",
     "timestamp": "2024-01-15T10:30:00",
     "status": "SUCCESS",
@@ -578,7 +578,7 @@
     "description": null,
     "timestamp": "2024-01-15T10:30:00",
     "status": "FAILED",
-    "message": "Insufficient card balance. Available: 30000 VND"
+    "message": "Insufficient card balance. Available: 30000.00 USD"
   }
   ```
 - **Logic**:
@@ -591,6 +591,7 @@
   - Transaction atomic (@Transactional)
   - Lưu cả SUCCESS và FAILED records
   - Error handling với detailed messages
+  - **Currency**: USD throughout system
 
 ### Lịch sử nạp tiền từ thẻ
 - **Mô tả**: Lấy lịch sử các lần nạp tiền từ thẻ vào ví.
@@ -944,8 +945,8 @@
 ### Global Validation Rules
 
 #### **Amount Validations**
-- **Minimum Amount**: 1,000 VND (cho tất cả giao dịch)
-- **Maximum Amount**: 5,000,000 VND (cho card deposit)
+- **Minimum Amount**: > 0 USD (cho tất cả giao dịch)
+- **Maximum Amount**: 5,000,000 USD (cho card deposit)
 - **Positive Values**: Tất cả amount phải > 0
 
 #### **Status Validations**
@@ -1002,16 +1003,16 @@
 // Valid Request
 {
   "cardId": 1,
-  "amount": 50000,
+  "amount": 50000.50,
   "description": "Nạp tiền từ thẻ"
 }
 
 // Invalid Requests
 {
   "cardId": null,           // Error: Card ID is required
-  "amount": 500,            // Error: Minimum deposit amount is 1000 VND
-  "amount": 6000000,        // Error: Maximum deposit amount is 5,000,000 VND
-  "amount": -1000           // Error: Amount must be greater than 0
+  "amount": 0,              // Error: Amount must be greater than 0
+  "amount": -100,            // Error: Amount must be greater than 0
+  "amount": 6000000.00      // Error: Maximum deposit amount is 5,000,000 USD
 }
 ```
 
@@ -1063,7 +1064,7 @@ public CardDepositResponse depositFromCard(String username, CardDepositRequest r
 | **Authentication** | "Invalid or expired token" | JWT token issues |
 | **Authorization** | "Access denied" | User not authorized |
 | **Validation** | "Card ID is required" | Missing required field |
-| **Business Rule** | "Insufficient card balance. Available: X VND" | Card balance insufficient |
+| **Business Rule** | "Insufficient card balance. Available: X USD" | Card balance insufficient |
 | **Status** | "Card is not active. Please contact support." | Card status invalid |
 | **System** | "Service temporarily unavailable" | System errors |
 

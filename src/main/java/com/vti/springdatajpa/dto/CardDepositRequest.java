@@ -12,8 +12,8 @@ public class CardDepositRequest {
     private Integer cardId;
     
     @NotNull(message = "Amount is required")
-    @DecimalMin(value = "1000.0", message = "Minimum deposit amount is 1000 VND")
-    @DecimalMax(value = "5000000.0", message = "Maximum deposit amount is 5,000,000 VND per transaction")
+    @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
+    @DecimalMax(value = "5000000.00", message = "Maximum deposit amount is 5,000,000 USD")
     private Double amount;
     
     private String description; // Optional description for deposit
