@@ -1,7 +1,6 @@
 package com.vti.springdatajpa.dto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record WithdrawResponse(
         Integer transactionId,
