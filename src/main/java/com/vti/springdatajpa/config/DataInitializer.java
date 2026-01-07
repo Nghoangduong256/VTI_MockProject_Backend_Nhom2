@@ -61,7 +61,9 @@ public class DataInitializer {
                 // Create Wallet
                 Wallet wallet = new Wallet();
                 wallet.setUser(savedUser);
+                wallet.setAccountNumber("12345");
                 wallet.setBalance(1500000.0);
+                wallet.setAvailableBalance(1500000.0);
                 wallet.setCurrency("VND");
                 wallet.setStatus(WalletStatus.ACTIVE);
                 wallet.setCreatedAt(LocalDateTime.now());

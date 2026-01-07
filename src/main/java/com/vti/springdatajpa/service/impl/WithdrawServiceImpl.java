@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class WithdrawServiceImpl implements WithdrawService {
@@ -28,6 +27,8 @@ public class WithdrawServiceImpl implements WithdrawService {
     private BankTransferRepository bankTransferRepo;
     @Autowired
     private BalanceChangeLogRepository balanceChangeLogRepo;
+    @Autowired
+    private CardRepository cardRepository;
 
     // Fee demo: 0.5%
     private BigDecimal calcFee(BigDecimal amount) {
@@ -53,10 +54,8 @@ public class WithdrawServiceImpl implements WithdrawService {
             );
         }
 
-        var bank = Optional.ofNullable(bankAccountRepo.findByIdAndUserId(req.bankAccountId(), userId))
-                .orElseThrow(() -> new IllegalArgumentException("BankAccount not found"));
-//        if (bank.getStatus() != BankAccountStatus.ACTIVE)
-//            throw new IllegalStateException("BankAccount not ACTIVE");
+        Card card = cardRepository.findByIdAndUserId(req.bankAccountId(), userId)
+                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
         // check wallet belongs user + lock
         Optional.ofNullable(walletRepo.findByIdAndUserId(walletId, userId))
@@ -84,7 +83,7 @@ public class WithdrawServiceImpl implements WithdrawService {
         walletRepo.save(wallet);
 
         var tx = new Transaction();
-        tx.setWallet(wallet); // ✅ FIX DUY NHẤT CẦN CÓ
+        tx.setWallet(wallet);
         tx.setType(TransactionType.WITHDRAW);
         tx.setDirection(TransactionDirection.OUT);
         tx.setAmount(amount.doubleValue());
@@ -95,10 +94,10 @@ public class WithdrawServiceImpl implements WithdrawService {
         tx.setIdempotencyKey(idempotencyKey);
 
         tx.setMetadata("""
-                  {"note": %s, "bankAccountId": "%s", "bankCode": "%s"}
+                  {"note": %s, "cardId": "%s", "bankCode": "%s"}
                 """.formatted(
                 req.note() == null ? "null" : ("\"" + req.note().replace("\"", "\\\"") + "\""),
-                bank.getId(), bank.getBankCode()
+                card.getId(), card.getBankName()
         ));
 
         txRepo.save(tx);
@@ -109,13 +108,6 @@ public class WithdrawServiceImpl implements WithdrawService {
         bcl.setBalanceBefore(availableBefore);
         bcl.setBalanceAfter(wallet.getAvailableBalance());
         balanceChangeLogRepo.save(bcl);
-
-        var bt = new BankTransfer();
-        bt.setTransaction(tx);
-        bt.setBankAccount(bank);
-        bt.setProvider("NAPAS"); // demo
-        bt.setStatus(BankTransferStatus.PENDING);
-        bankTransferRepo.save(bt);
 
         return new WithdrawResponse(
                 tx.getId(),
