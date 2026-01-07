@@ -27,6 +27,7 @@ public class WithdrawController {
                                      @RequestBody WithdrawRequest req,
                                      @RequestHeader("Idempotency-Key") String idempotencyKey) {
         Integer userId = 1; // bạn thay bằng JWT principal
+        System.out.println("Wallet ID: " + walletId);
         return withdrawService.createWithdraw(userId, walletId, req, idempotencyKey);
     }
 //

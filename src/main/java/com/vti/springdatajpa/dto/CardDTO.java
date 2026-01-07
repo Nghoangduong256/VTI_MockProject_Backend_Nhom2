@@ -13,4 +13,5 @@ public class CardDTO {
     private String bankName;
     private String status;
     private String last4; // Helper for display
+    private Double balanceCard; // Card balance for deposit operations
 }

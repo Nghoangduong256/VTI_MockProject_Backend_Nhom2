@@ -37,6 +37,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     @Query("SELECT t FROM Transaction t WHERE t.wallet.id = ?1 AND t.direction = ?2 ORDER BY t.createdAt DESC")
     List<Transaction> findIncomingTransactions(Integer walletId, TransactionDirection direction);
 
+    // dùng cho dashboard analytics - transactions trong khoảng thời gian
+    @Query("SELECT t FROM Transaction t WHERE t.wallet.id = ?1 AND t.createdAt BETWEEN ?2 AND ?3 ORDER BY t.createdAt DESC")
+    List<Transaction> findByWalletIdAndCreatedAtBetween(Integer walletId, LocalDateTime startDate, LocalDateTime endDate);
+
     // dùng cho transfer history có phân trang + filter
     // filter theo (walletId), chiều giao dịch (IN/OUT), thời gian (fromDate / toDate)
     @Query("""
