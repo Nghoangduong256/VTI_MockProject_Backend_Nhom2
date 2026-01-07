@@ -36,6 +36,13 @@ public class CardService {
         return cards.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
+    public List<CardDTO> getCards(int id) {
+
+        List<Card> cards = cardRepository.findByUserId(id);
+
+        return cards.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
     public CardDTO addCard(String username, CardDTO dto) {
         User user = findUserByUsernameOrEmail(username);
 

@@ -37,6 +37,11 @@ public class CardController {
         
         return ResponseEntity.ok(cardService.getCards(userName));
     }
+    @GetMapping("{userId}/users")
+    public ResponseEntity<List<CardDTO>> getCardsByUserId(@PathVariable(value = "userId") Integer userId) {
+
+        return ResponseEntity.ok(cardService.getCards(userId));
+    }
 
     @PostMapping
     public ResponseEntity<CardDTO> addCard(@Valid @RequestBody CardDTO cardDTO) {
