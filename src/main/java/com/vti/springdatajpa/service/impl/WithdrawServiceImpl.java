@@ -84,6 +84,7 @@ public class WithdrawServiceImpl implements WithdrawService {
         walletRepo.save(wallet);
 
         var tx = new Transaction();
+        tx.setWallet(wallet); // ✅ FIX DUY NHẤT CẦN CÓ
         tx.setType(TransactionType.WITHDRAW);
         tx.setDirection(TransactionDirection.OUT);
         tx.setAmount(amount.doubleValue());

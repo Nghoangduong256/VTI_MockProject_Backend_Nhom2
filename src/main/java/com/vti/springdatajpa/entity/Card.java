@@ -28,6 +28,8 @@ public class Card {
     @Enumerated(EnumType.STRING)
     private CardStatus status;
 
+    private Double balanceCard = 1000000000.0; // Default balance for card
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

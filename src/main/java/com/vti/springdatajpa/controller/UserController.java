@@ -1,13 +1,12 @@
 package com.vti.springdatajpa.controller;
 
 import com.vti.springdatajpa.dto.UserAvatarUpdateDTO;
-import com.vti.springdatajpa.dto.UserDto;
 import com.vti.springdatajpa.dto.UserProfileDTO;
 import com.vti.springdatajpa.dto.UserProfileUpdateDTO;
 import com.vti.springdatajpa.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +35,7 @@ public class UserController {
 
     @PutMapping("/profile/avatar")
     public ResponseEntity<?> updateAvatar(
-            @RequestBody UserAvatarUpdateDTO dto
+            @Valid @RequestBody UserAvatarUpdateDTO dto
     ) {
         userService.updateAvatar(
                 getIdentityFromSecurityContext(),

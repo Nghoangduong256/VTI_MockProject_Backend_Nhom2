@@ -32,10 +32,21 @@ public class WalletService {
     }
 
     public WalletInfoDTO getWalletInfo(Object identity) {
+        System.out.println("WalletService.getWalletInfo called with identity: " + identity);
+        
         User user = findUserByUsernameOrEmail(identity);
+        System.out.println("Found user: " + user);
+        System.out.println("User ID: " + user.getId());
+        System.out.println("User phone: " + user.getPhone());
 
         Wallet wallet = walletRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
+        
+        System.out.println("Found wallet: " + wallet);
+        System.out.println("Wallet ID: " + wallet.getId());
+        System.out.println("Wallet code: " + wallet.getCode());
+        System.out.println("Wallet accountNumber: " + wallet.getAccountNumber());
+        System.out.println("Wallet balance: " + wallet.getBalance());
 
         WalletInfoDTO dto = new WalletInfoDTO();
         dto.setWalletId(wallet.getCode() != null ? wallet.getCode() : "WALLET" + wallet.getId());
@@ -44,6 +55,7 @@ public class WalletService {
         dto.setCurrency(wallet.getCurrency() != null ? wallet.getCurrency() : "VND");
         dto.setBalance(wallet.getBalance());
 
+        System.out.println("Created DTO: " + dto);
         return dto;
     }
 

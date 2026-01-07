@@ -29,8 +29,20 @@ public class QrController {
         Object identity = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("QR Wallet Info - JWT identity: " + identity);
         System.out.println("Identity type: " + identity.getClass().getName());
-        WalletInfoDTO walletInfo = walletService.getWalletInfo(identity);
-        return ResponseEntity.ok(walletInfo);
+        
+        try {
+            WalletInfoDTO walletInfo = walletService.getWalletInfo(identity);
+            System.out.println("Wallet info retrieved successfully: " + walletInfo);
+            System.out.println("WalletId: " + walletInfo.getWalletId());
+            System.out.println("AccountName: " + walletInfo.getAccountName());
+            System.out.println("AccountNumber: " + walletInfo.getAccountNumber());
+            System.out.println("Balance: " + walletInfo.getBalance());
+            return ResponseEntity.ok(walletInfo);
+        } catch (Exception e) {
+            System.err.println("Error getting wallet info: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @GetMapping("/qr/wallet")
