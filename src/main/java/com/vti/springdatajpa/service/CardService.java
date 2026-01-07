@@ -67,12 +67,8 @@ public class CardService {
             return createErrorResponse("Amount must be greater than 0", null);
         }
         
-        if (request.getAmount() < 1000.0) {
-            return createErrorResponse("Minimum deposit amount is 1000 VND", null);
-        }
-        
-        if (request.getAmount() > 5000000.0) {
-            return createErrorResponse("Maximum deposit amount is 5,000,000 VND per transaction", null);
+        if (request.getAmount() > 5000000.00) {
+            return createErrorResponse("Maximum deposit amount is 5,000,000 USD per transaction", null);
         }
         
         // Validate card ownership and existence
@@ -87,7 +83,7 @@ public class CardService {
         // Validate card balance
         if (card.getBalanceCard() < request.getAmount()) {
             CardDepositResponse response = createErrorResponse(
-                "Insufficient card balance. Available: " + card.getBalanceCard() + " VND", 
+                "Insufficient card balance. Available: " + card.getBalanceCard() + " USD", 
                 card.getId()
             );
             
