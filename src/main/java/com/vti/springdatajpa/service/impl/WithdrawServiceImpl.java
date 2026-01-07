@@ -88,8 +88,8 @@ public class WithdrawServiceImpl implements WithdrawService {
         tx.setDirection(TransactionDirection.OUT);
         tx.setAmount(amount.doubleValue());
         tx.setFee(fee.doubleValue());
-        tx.setBalanceBefore(wallet.getBalance());
-        tx.setBalanceAfter(wallet.getBalance()); // chưa trừ balance ở bước PENDING
+        tx.setBalanceBefore(wallet.getAvailableBalance());        // ✅ Đúng
+        tx.setBalanceAfter(wallet.getAvailableBalance());         // ✅ Đúngtrừ balance ở bước PENDING
         tx.setStatus(TransactionStatus.PENDING);
         tx.setIdempotencyKey(idempotencyKey);
 
@@ -140,13 +140,14 @@ public class WithdrawServiceImpl implements WithdrawService {
 
         if ("SUCCESS".equalsIgnoreCase(status)) {
             // Trừ balance thật
-            var balanceBefore = wallet.getBalance();
-            wallet.setBalance(balanceBefore - totalDebit);
+var balanceBefore = wallet.getAvailableBalance();          // ✅ Đúng
+wallet.setBalance(balanceBefore - totalDebit);             // ✅ Đúng
+wallet.setAvailableBalance(balanceBefore - totalDebit);    // ✅ Thêm
             walletRepo.save(wallet);
 
             tx.setStatus(TransactionStatus.COMPLETED);
             tx.setReferenceId(bankReference);
-            tx.setBalanceAfter(wallet.getBalance());
+            tx.setBalanceAfter(wallet.getAvailableBalance());
             txRepo.save(tx);
 
             // log ledger trừ balance (nếu bạn muốn tách ledger hold vs settle rõ hơn)
@@ -155,7 +156,7 @@ public class WithdrawServiceImpl implements WithdrawService {
             bcl.setTransaction(tx);
             bcl.setDelta(totalDebit);
             bcl.setBalanceBefore(balanceBefore);
-            bcl.setBalanceAfter(wallet.getBalance());
+            bcl.setBalanceAfter(wallet.getAvailableBalance());
             balanceChangeLogRepo.save(bcl);
 
         } else {

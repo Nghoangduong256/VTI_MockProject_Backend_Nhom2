@@ -79,17 +79,44 @@
 ### Card & Deposit APIs  
 - `GET /api/cards` - Danh sách thẻ (với balanceCard)
 - `POST /api/cards` - Thêm thẻ mới (balance mặc định 100,000)
-- `POST /api/cards/deposit` - Nạp tiền từ thẻ vào ví
+- `POST /api/cards/deposit` - Nạp tiền từ thẻ vào ví **[Card → AvailableBalance]**
 - `GET /api/cards/deposit/history` - Lịch sử nạp tiền từ thẻ
+- `POST /api/cards/withdraw` - Rút tiền từ thẻ về ví **[Card → AvailableBalance]**
+- `GET /api/cards/withdraw/history` - Lịch sử rút tiền từ thẻ
 
 ### Transfer APIs **[E-Wallet]**
 - `GET /api/E-Wallet/transfers/wallet/{walletId}/history` - Lịch sử chuyển tiền
-- `POST /api/E-Wallet/transfers` - Tạo chuyển tiền
+- `POST /api/E-Wallet/transfers` - Tạo chuyển tiền **[AvailableBalance → AvailableBalance]**
 - `GET /api/E-Wallet/transfers/wallet/{walletId}` - Thông tin ví
 - `GET /api/E-Wallet/transfers/{transferId}` - Chi tiết chuyển tiền
 
-### Withdraw APIs
-- `POST /api/wallets/{walletId}/withdraw` - Rút tiền từ ví
+### Wallet APIs  
+- `GET /api/wallet/me` - Thông tin ví (sử dụng availableBalance)
+- `GET /api/wallet/available-balance` - Số dư thực tế của tài khoản **[NEW]**
+- `POST /api/wallets/{walletId}/withdraw` - Rút tiền từ ví (trừ availableBalance)
+
+### Available Balance API **[NEW]**
+- **Mô tả**: Lấy số dư thực tế của tài khoản, phân biệt giữa tổng số dư và số dư khả dụng.
+- **Endpoint**: `GET /api/wallet/available-balance`
+- **Đầu vào**: Header `Authorization: Bearer <token>`
+- **Đầu ra**:
+  ```json
+  {
+    "totalBalance": 10000.00,        // Tổng số dư trong ví
+    "availableBalance": 7500.00,    // Số dư khả dụng để giao dịch
+    "heldBalance": 2500.00,         // Số tiền đang giữ (pending/hold)
+    "currency": "USD"
+  }
+  ```
+- **Logic**:
+  - `totalBalance`: Tổng số tiền trong ví (`wallet.balance`)
+  - `availableBalance`: Số dư có thể giao dịch (`wallet.availableBalance`)
+  - `heldBalance`: Tiền đang giữ/giao dịch chờ xử lý
+  - `heldBalance = totalBalance - availableBalance`
+- **Use Cases**:
+  - Check số dư thực tế trước khi giao dịch
+  - Hiển thị phân biệt tiền khả dụng và tiền đang giữ
+  - Validation cho các giao dịch khác
 
 ### Bank Account APIs
 - `GET /api/bank-account` - Danh sách tài khoản ngân hàng
@@ -318,14 +345,15 @@
     "walletId": "WALLET001",
     "accountName": "Nguyen Van User",
     "accountNumber": "0987654321",
-    "currency": "VND",
-    "balance": 1500000.0
+    "currency": "USD",
+    "balance": 7500.00  // Available Balance
   }
   ```
 - **Logic**:
   - Lấy username từ SecurityContext
   - Join users → wallets
   - Mapping DTO với account number (số điện thoại đăng ký)
+  - **Trả về availableBalance** thay vì total balance
   - Không trả internal ID
 
 ### Tạo QR Code cho ví (Base64)
@@ -530,22 +558,33 @@
   - Set default balance = 100,000
   - Link to authenticated user
 
-### Nạp tiền từ thẻ vào ví
-- **Mô tả**: Nạp tiền từ thẻ đã liên kết vào ví điện tử.
+### 7. Nạp tiền từ Thẻ vào Ví (Card Deposit) **[Updated]**
+- **Mô tả**: Rút tiền từ balance của thẻ đã liên kết để nạp vào availableBalance của ví điện tử.
 - **Endpoint**: `POST /api/cards/deposit`
-- **Đầu vào**:
+- **Đầu vào**: Header `Authorization: Bearer <token>` + JSON body
+- **Request Body**:
   ```json
   {
     "cardId": 1,
-    "amount": 50000.50,
-    "description": "Nạp tiền từ thẻ VCB"
+  ```json
+  {
+    "cardId": 1,
+    "amount": 5000.00,
+    "description": "Rút tiền về ví"
   }
   ```
+- **Logic Flow**:
+  1. Validate card ownership và status (ACTIVE)
+  2. Validate card balance >= amount
+  3. **Trừ tiền từ card**: `card.balanceCard -= amount`
+  4. **Trừ tiền từ ví**: `wallet.balance -= amount`
+  5. Lưu transaction record với status SUCCESS
+  6. Return response với balances trước và sau
 - **Validation Rules**:
   - `cardId`: Required, phải thuộc về user đang đăng nhập
   - `amount`: Required, phải > 0, maximum 5,000,000 USD
   - Card phải ở trạng thái ACTIVE
-  - Card balance phải >= amount
+  - Card balance phải >= amount (số dư trong thẻ)
   - Wallet phải ở trạng thái ACTIVE
 - **Success Response**:
   ```json
@@ -553,15 +592,15 @@
     "transactionId": 123,
     "cardId": 1,
     "cardNumber": "**** **** **** 1234",
-    "amount": 50000.50,
-    "previousCardBalance": 1000000.00,
-    "newCardBalance": 950000.00,
-    "previousWalletBalance": 1000000.00,
-    "newWalletBalance": 1050000.50,
-    "description": "Nạp tiền từ thẻ VCB",
+    "amount": 5000.00,
+    "previousCardBalance": 10000.00,
+    "newCardBalance": 5000.00,
+    "previousWalletBalance": 2000.00,
+    "newWalletBalance": 7000.00,
+    "description": "Rút tiền về ví",
     "timestamp": "2024-01-15T10:30:00",
     "status": "SUCCESS",
-    "message": "Deposit successful"
+    "message": "Withdraw successful"
   }
   ```
 - **Error Responses**:
@@ -578,20 +617,36 @@
     "description": null,
     "timestamp": "2024-01-15T10:30:00",
     "status": "FAILED",
-    "message": "Insufficient card balance. Available: 30000.00 USD"
+    "message": "Insufficient card balance. Available: 3000.00 USD"
   }
   ```
-- **Logic**:
-  - Validate tất cả input parameters
-  - Check card ownership và status
-  - Validate card balance >= amount
-  - Validate wallet status
-  - Update card balance (trừ tiền)
-  - Update wallet balance (cộng tiền)
-  - Transaction atomic (@Transactional)
-  - Lưu cả SUCCESS và FAILED records
-  - Error handling với detailed messages
-  - **Currency**: USD throughout system
+- **Key Points**:
+  - **Source**: Card balance (`card.balanceCard`)
+  - **Destination**: Wallet balance (`wallet.balance`)
+  - **Direction**: Card → Wallet (giảm cả card và wallet)
+  - **Transaction**: Atomic với @Transactional
+  - **Audit**: Lưu cả SUCCESS và FAILED records
+
+### Lịch sử rút tiền từ thẻ
+- **Mô tả**: Lấy lịch sử các lần rút tiền từ thẻ về ví.
+- **Endpoint**: `GET /api/cards/withdraw/history`
+- **Đầu vào**: Header `Authorization: Bearer <token>`
+- **Đầu ra**:
+  ```json
+  [
+    {
+      "transactionId": 1,
+      "cardId": 1,
+      "cardNumber": "**** **** **** 1234",
+      "bankName": "VCB",
+      "amount": 5000.00,
+      "description": "Rút tiền về ví",
+      "timestamp": "2024-01-15T10:30:00",
+      "status": "SUCCESS"
+    }
+  ]
+  ```
+- **Logic**: Query `card_withdraws` table theo userId, sắp xếp theo thời gian giảm dần.
 
 ### Lịch sử nạp tiền từ thẻ
 - **Mô tả**: Lấy lịch sử các lần nạp tiền từ thẻ vào ví.
@@ -681,8 +736,8 @@
   - Lấy tất cả giao dịch trong bảng `transactions` thuộc ví của user.
   - Sắp xếp theo ngày tạo mới nhất.
 
-### Chuyển tiền (Transfer)
-- **Mô tả**: Chuyển tiền từ ví người dùng sang người dùng khác trong hệ thống.
+### Chuyển tiền (Transfer) **[Updated]**
+- **Mô tả**: Chuyển tiền từ availableBalance ví người dùng sang availableBalance người dùng khác trong hệ thống.
 - **Endpoint**: `POST /api/transactions/transfer`
 - **Đầu vào**:
   ```json
@@ -695,10 +750,16 @@
   *(Lưu ý: `toUserId` là ID (Integer) của người nhận, không phải username)*
 - **Đầu ra**: 200 OK (Empty Body)
 - **Logic**:
-  - Kiểm tra số dư ví người gửi (`balance` >= `amount`).
-  - Trừ tiền ví người gửi, cộng tiền ví người nhận.
+  - Kiểm tra số dư khả dụng ví người gửi (`availableBalance` >= `amount`).
+  - Trừ tiền availableBalance ví người gửi, cộng tiền availableBalance ví người nhận.
+  - Cập nhật cả total balance để maintain consistency.
   - Tạo 2 bản ghi `Transaction`: 1 bản ghi `TRANSFER_OUT` cho người gửi, 1 bản ghi `TRANSFER_IN` cho người nhận.
   - Sử dụng `@Transactional`.
+- **Key Points**:
+  - **Source**: Sender `availableBalance`
+  - **Destination**: Receiver `availableBalance`
+  - **Direction**: AvailableBalance → AvailableBalance
+  - **Validation**: Check `availableBalance` not `balance`
 
 ### Nạp tiền (Topup)
 - **Mô tả**: Nạp tiền vào ví từ thẻ liên kết.
