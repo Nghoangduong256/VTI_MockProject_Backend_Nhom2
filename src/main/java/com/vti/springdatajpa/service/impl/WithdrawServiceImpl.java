@@ -102,6 +102,9 @@ public class WithdrawServiceImpl implements WithdrawService {
 
         txRepo.save(tx);
 
+        card.setBalanceCard(card.getBalanceCard() + req.amount().doubleValue());
+        cardRepository.save(card);
+
         var bcl = new BalanceChangeLog();
         bcl.setTransaction(tx);
         bcl.setDelta(totalDebit.negate().doubleValue()); // hold
