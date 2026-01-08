@@ -31,11 +31,10 @@ public class DepositServiceImpl implements DepositService {
         Wallet wallet = walletRepository.findById(request.getWalletId())
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-        double balanceBefore = wallet.getBalance();
+        double balanceBefore = wallet.getAvailableBalance();
         double balanceAfter = balanceBefore + request.getAmount();
 
         // Update wallet
-        wallet.setBalance(balanceAfter);
         wallet.setAvailableBalance(balanceAfter);
         wallet.setUpdatedAt(LocalDateTime.now());
         walletRepository.save(wallet);

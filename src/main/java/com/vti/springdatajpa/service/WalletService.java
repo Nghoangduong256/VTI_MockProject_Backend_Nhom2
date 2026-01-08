@@ -1,5 +1,6 @@
 package com.vti.springdatajpa.service;
 
+import com.vti.springdatajpa.dto.AvailableBalanceDTO;
 import com.vti.springdatajpa.dto.WalletBalanceDTO;
 import com.vti.springdatajpa.dto.WalletInfoDTO;
 import com.vti.springdatajpa.entity.User;
@@ -23,7 +24,7 @@ public class WalletService {
 
         WalletBalanceDTO dto = new WalletBalanceDTO();
         if (wallet != null) {
-            dto.setBalance(wallet.getBalance());
+            dto.setBalance(wallet.getAvailableBalance());
         } else {
             dto.setBalance(0.0);
         }
@@ -46,14 +47,14 @@ public class WalletService {
         System.out.println("Wallet ID: " + wallet.getId());
         System.out.println("Wallet code: " + wallet.getCode());
         System.out.println("Wallet accountNumber: " + wallet.getAccountNumber());
-        System.out.println("Wallet balance: " + wallet.getBalance());
+        System.out.println("Wallet balance: " + wallet.getAvailableBalance());
 
         WalletInfoDTO dto = new WalletInfoDTO();
         dto.setWalletId(wallet.getCode() != null ? wallet.getCode() : "WALLET" + wallet.getId());
         dto.setAccountName(user.getFullName());
         dto.setAccountNumber(wallet.getAccountNumber() != null ? wallet.getAccountNumber() : user.getPhone());
         dto.setCurrency(wallet.getCurrency() != null ? wallet.getCurrency() : "VND");
-        dto.setBalance(wallet.getBalance());
+        dto.setBalance(wallet.getAvailableBalance());
 
         System.out.println("Created DTO: " + dto);
         return dto;
@@ -62,6 +63,21 @@ public class WalletService {
     public Wallet getWalletByCode(String walletCode) {
         return walletRepository.findByCode(walletCode)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
+    }
+
+    public AvailableBalanceDTO getAvailableBalance(Object identity) {
+        User user = findUserByUsernameOrEmail(identity);
+        
+        Wallet wallet = walletRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+        
+        AvailableBalanceDTO dto = new AvailableBalanceDTO();
+        dto.setTotalBalance(wallet.getBalance());
+        dto.setAvailableBalance(wallet.getAvailableBalance());
+        dto.setHeldBalance(wallet.getBalance() - wallet.getAvailableBalance());
+        dto.setCurrency(wallet.getCurrency() != null ? wallet.getCurrency() : "USD");
+        
+        return dto;
     }
 
     /**

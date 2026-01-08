@@ -1,9 +1,9 @@
 package com.vti.springdatajpa.service;
 
+import com.vti.springdatajpa.dto.CardDepositHistoryDTO;
 import com.vti.springdatajpa.dto.CardDTO;
 import com.vti.springdatajpa.dto.CardDepositRequest;
 import com.vti.springdatajpa.dto.CardDepositResponse;
-import com.vti.springdatajpa.dto.CardDepositHistoryDTO;
 import com.vti.springdatajpa.entity.Card;
 import com.vti.springdatajpa.entity.CardDeposit;
 import com.vti.springdatajpa.entity.User;
@@ -112,12 +112,12 @@ public class CardService {
 
         // Store previous balances
         Double previousCardBalance = card.getBalanceCard();
-        Double previousWalletBalance = wallet.getBalance();
+        Double previousWalletBalance = wallet.getAvailableBalance();
 
         try {
             // Update balances
             card.setBalanceCard(card.getBalanceCard() - request.getAmount());
-            wallet.setBalance(wallet.getBalance() + request.getAmount());
+            wallet.setAvailableBalance(wallet.getAvailableBalance() + request.getAmount());
 
             // Save changes
             cardRepository.save(card);
@@ -136,7 +136,7 @@ public class CardService {
             response.setPreviousCardBalance(previousCardBalance);
             response.setNewCardBalance(card.getBalanceCard());
             response.setPreviousWalletBalance(previousWalletBalance);
-            response.setNewWalletBalance(wallet.getBalance());
+            response.setNewWalletBalance(wallet.getAvailableBalance());
             response.setDescription(request.getDescription());
             response.setTimestamp(LocalDateTime.now());
             response.setStatus("SUCCESS");
