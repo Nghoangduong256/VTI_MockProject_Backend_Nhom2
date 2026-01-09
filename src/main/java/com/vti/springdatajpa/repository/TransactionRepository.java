@@ -43,12 +43,57 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     // dùng cho transfer history có phân trang + filter
     // filter theo (walletId), chiều giao dịch (IN/OUT), thời gian (fromDate / toDate)
-    @Query("""
-    SELECT t FROM Transaction t WHERE t.wallet.id = :walletId
-      AND (:direction IS NULL OR t.direction = :direction)
-      AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
-      AND (:toDate IS NULL OR t.createdAt <= :toDate)
-    """)
+    @Query(
+            value = """
+    SELECT t FROM Transaction t
+    WHERE t.wallet.id = :walletId
+    AND (
+        :direction IS NULL OR
+        (
+            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.IN
+            AND t.type IN (
+                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN,
+                com.vti.springdatajpa.entity.enums.TransactionType.DEPOSIT
+            )
+        )
+        OR
+        (
+            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.OUT
+            AND t.type IN (
+                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
+                com.vti.springdatajpa.entity.enums.TransactionType.WITHDRAW
+            )
+        )
+    )
+    AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+    AND (:toDate IS NULL OR t.createdAt <= :toDate)
+    ORDER BY t.createdAt DESC
+    """,
+            countQuery = """
+    SELECT COUNT(t) FROM Transaction t
+    WHERE t.wallet.id = :walletId
+    AND (
+        :direction IS NULL OR
+        (
+            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.IN
+            AND t.type IN (
+                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN,
+                com.vti.springdatajpa.entity.enums.TransactionType.DEPOSIT
+            )
+        )
+        OR
+        (
+            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.OUT
+            AND t.type IN (
+                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
+                com.vti.springdatajpa.entity.enums.TransactionType.WITHDRAW
+            )
+        )
+    )
+    AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+    AND (:toDate IS NULL OR t.createdAt <= :toDate)
+    """
+    )
     Page<Transaction> findTransferHistory(
             @Param("walletId") Integer walletId,
             @Param("direction") TransactionDirection direction,
@@ -56,4 +101,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("toDate") LocalDateTime toDate,
             Pageable pageable
     );
+
 }

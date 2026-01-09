@@ -1,6 +1,9 @@
 package com.vti.springdatajpa.controller;
 
+import com.vti.springdatajpa.dto.TransferDetailDTO;
 import com.vti.springdatajpa.dto.TransferHistoryDTO;
+import com.vti.springdatajpa.dto.TransferRequest;
+import com.vti.springdatajpa.dto.WalletSelectDTO;
 import com.vti.springdatajpa.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -8,9 +11,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -71,18 +78,24 @@ public class TransferController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
-    public ResponseEntity<?> transfer(@RequestBody Object request) {
-        return ResponseEntity.ok(Map.of("message", "Transfer created"));
-    }
-
     @GetMapping("/wallet/{walletId}")
     public ResponseEntity<?> getWallet(@PathVariable Integer walletId) {
         return ResponseEntity.ok(Map.of("walletId", walletId));
     }
 
     @GetMapping("/{transferId}")
-    public ResponseEntity<?> getTransferDetail(@PathVariable Integer transferId) {
-        return ResponseEntity.ok(Map.of("transferId", transferId));
+    public ResponseEntity<TransferDetailDTO> getTransferDetail(
+            @PathVariable Integer transferId
+    ) {
+        return ResponseEntity.ok(
+                transactionService.getTransferDetail(transferId)
+        );
+    }
+    @GetMapping("/wallets/search")
+    public List<WalletSelectDTO> searchWalletByPhone(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestParam String phone
+    ) {
+        return transactionService.searchWalletByPhone(user.getUsername(), phone);
     }
 }
