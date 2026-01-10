@@ -50,4 +50,12 @@ public class Transaction {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Column(name = "transaction_date", nullable = false)
+    private LocalDateTime transactionDate;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private TransactionCategory category;
+
 }
