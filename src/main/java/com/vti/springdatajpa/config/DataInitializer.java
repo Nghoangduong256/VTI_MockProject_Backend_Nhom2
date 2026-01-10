@@ -18,12 +18,36 @@ public class DataInitializer {
     private final PasswordEncoder passwordEncoder;
 
     @Bean
-    CommandLineRunner initUsers(UserRepository userRepository,
+    CommandLineRunner initUsers(
+            UserRepository userRepository,
             WalletRepository walletRepository,
             BankAccountRepository bankAccountRepository,
             ContactRepository contactRepository,
-            TransactionRepository transactionRepository) {
+            TransactionRepository transactionRepository,
+            TransactionCategoryRepository categoryRepository
+    ) {
         return args -> {
+
+            // Create Transaction category
+            TransactionCategory food = categoryRepository.findByName("Food")
+                    .orElseGet(() -> categoryRepository.save(
+                            new TransactionCategory(null, "Food", "restaurant", "#4CAF50")
+                    ));
+
+            TransactionCategory transport = categoryRepository.findByName("Transport")
+                    .orElseGet(() -> categoryRepository.save(
+                            new TransactionCategory(null, "Transport", "directions_car", "#2196F3")
+                    ));
+
+            TransactionCategory shopping = categoryRepository.findByName("Shopping")
+                    .orElseGet(() -> categoryRepository.save(
+                            new TransactionCategory(null, "Shopping", "shopping_bag", "#9C27B0")
+                    ));
+
+            TransactionCategory entertainment = categoryRepository.findByName("Entertainment")
+                    .orElseGet(() -> categoryRepository.save(
+                            new TransactionCategory(null, "Entertainment", "movie", "#FF9800")
+                    ));
 
             // ============================================
             // 1. ADMIN User
@@ -96,7 +120,33 @@ public class DataInitializer {
                 tx.setCreatedAt(LocalDateTime.now().minusDays(1));
                 transactionRepository.save(tx);
 
+
                 System.out.println("✅ Helper: Created normal user with wallet/card/contact");
+            }
+
+            // USER + WALLET (GIỮ NGUYÊN LOGIC CŨ)
+            User user = userRepository.findByUserName("user").orElse(null);
+            if (user == null) return;
+
+            Wallet wallet = walletRepository.findByUser(user).orElse(null);
+            if (wallet == null) return;
+
+            // TRANSACTION SEED (SPENDING)
+            if (transactionRepository.count() < 5) {
+                LocalDateTime now = LocalDateTime.now();
+
+                createSpendingTx(transactionRepository, wallet, food,
+                        120_000, "Starbucks", now.minusDays(1));
+                createSpendingTx(transactionRepository, wallet, transport,
+                        80_000, "Grab", now.minusDays(2));
+                createSpendingTx(transactionRepository, wallet, shopping,
+                        350_000, "Shopee", now.minusDays(3));
+                createSpendingTx(transactionRepository, wallet, entertainment,
+                        150_000, "CGV Cinema", now.minusDays(4));
+                createSpendingTx(transactionRepository, wallet, food,
+                        90_000, "Bún bò", now.minusDays(5));
+
+                System.out.println("✅ Helper: Seeded spending transactions");
             }
 
             // ============================================
@@ -118,4 +168,31 @@ public class DataInitializer {
             System.out.println("✅ User initialization check completed.");
         };
     }
+
+    private void createSpendingTx(
+            TransactionRepository repo,
+            Wallet wallet,
+            TransactionCategory category,
+            double amount,
+            String description,
+            LocalDateTime txDate
+    ) {
+        Transaction tx = new Transaction();
+        tx.setWallet(wallet);
+        tx.setAmount(amount);
+        tx.setFee(0.0);
+
+        tx.setType(TransactionType.WITHDRAW);          // nghiệp vụ
+        tx.setDirection(TransactionDirection.OUT);     // QUAN TRỌNG
+        tx.setStatus(TransactionStatus.COMPLETED);
+
+        tx.setCategory(category);
+        tx.setMetadata(description);
+
+        tx.setTransactionDate(txDate);                 // DÙNG CHO DASHBOARD
+        tx.setCreatedAt(LocalDateTime.now());
+
+        repo.save(tx);
+    }
+
 }
