@@ -41,6 +41,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // thêm đường dẫn register vào đây để cho phép truy cập công khai
                         .requestMatchers("/api/auth/register").permitAll()
+                        // truy cập công khai cho các endpoint liên quan đến spending
+                        .requestMatchers("/api/spending/**")
+                        .hasAnyRole("USER", "ADMIN", "SUPPORT")
+
                         //
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
 
