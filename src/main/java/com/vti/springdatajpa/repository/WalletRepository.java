@@ -30,5 +30,5 @@ public interface WalletRepository extends JpaRepository<Wallet, Integer> {
     // Lấy ví theo code
     Optional<Wallet> findByCode(String code);
 
-    Optional<Object> findByUser(User user);
+    Optional<Wallet> findByUser(User user);
 }

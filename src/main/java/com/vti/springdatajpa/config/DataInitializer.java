@@ -1,8 +1,11 @@
 package com.vti.springdatajpa.config;
 
+import com.vti.springdatajpa.dto.SpendingActivityDTO;
 import com.vti.springdatajpa.entity.*;
 import com.vti.springdatajpa.entity.enums.*;
 import com.vti.springdatajpa.repository.*;
+import com.vti.springdatajpa.service.SpendingService;
+import com.vti.springdatajpa.service.impl.SpendingServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -10,12 +13,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
 public class DataInitializer {
 
     private final PasswordEncoder passwordEncoder;
+    private final SpendingService spendingService; // ✅ THÊM DÒNG NÀY
+
 
     @Bean
     CommandLineRunner initUsers(
@@ -119,7 +125,7 @@ public class DataInitializer {
                 tx.setStatus(TransactionStatus.COMPLETED);
                 tx.setCreatedAt(LocalDateTime.now().minusDays(1));
                 transactionRepository.save(tx);
-
+                tx.setTransactionDate(LocalDateTime.now().minusDays(1));
 
                 System.out.println("✅ Helper: Created normal user with wallet/card/contact");
             }
@@ -166,6 +172,41 @@ public class DataInitializer {
             }
 
             System.out.println("✅ User initialization check completed.");
+
+            //Log test monthly spending
+//            double monthlySpending = spendingService.getMonthlySpending();
+//            System.out.println("🔥 Monthly Spending = " + monthlySpending);
+
+            //Log test monthly spending activity
+//            List<SpendingActivityDTO> activities =
+//                    spendingService.getMonthlySpendingActivity();
+//
+//            System.out.println("🔥 Spending Activity:");
+//            activities.forEach(a ->
+//                    System.out.println(a.getDate() + " -> " + a.getTotalAmount())
+//            );
+
+            //Log test monthly spending breakdown
+//            System.out.println("🔥 Spending Breakdown:");
+//            spendingService.getMonthlySpendingBreakdown()
+//                    .forEach(b ->
+//                            System.out.println(
+//                                    b.getCategoryName() + " -> " + b.getTotalAmount()
+//                            )
+//                    );
+
+            // Log test recent spending transactions
+//            System.out.println("🔥 Recent Transactions:");
+//            spendingService.getRecentSpendingTransactions(5)
+//                    .forEach(tx ->
+//                            System.out.println(
+//                                    tx.getTransactionDate()
+//                                            + " | " + tx.getCategoryName()
+//                                            + " | " + tx.getAmount()
+//                            )
+//                    );
+
+
         };
     }
 
