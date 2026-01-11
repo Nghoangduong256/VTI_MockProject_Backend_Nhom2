@@ -45,61 +45,34 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     // filter theo (walletId), chiều giao dịch (IN/OUT), thời gian (fromDate / toDate)
     @Query(
             value = """
-    SELECT t FROM Transaction t
-    WHERE t.wallet.id = :walletId
-    AND (
-        :direction IS NULL OR
-        (
-            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.IN
-            AND t.type IN (
-                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN,
-                com.vti.springdatajpa.entity.enums.TransactionType.DEPOSIT
-            )
-        )
-        OR
-        (
-            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.OUT
-            AND t.type IN (
-                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
-                com.vti.springdatajpa.entity.enums.TransactionType.WITHDRAW
-            )
-        )
-    )
-    AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
-    AND (:toDate IS NULL OR t.createdAt <= :toDate)
-    ORDER BY t.createdAt DESC
+        SELECT t FROM Transaction t
+        WHERE t.wallet.id = :walletId
+          AND t.type IN (
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN
+          )
+          AND (:direction IS NULL OR t.direction = :direction)
+          AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+          AND (:toDate IS NULL OR t.createdAt <= :toDate)
+        ORDER BY t.createdAt DESC
     """,
             countQuery = """
-    SELECT COUNT(t) FROM Transaction t
-    WHERE t.wallet.id = :walletId
-    AND (
-        :direction IS NULL OR
-        (
-            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.IN
-            AND t.type IN (
-                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN,
-                com.vti.springdatajpa.entity.enums.TransactionType.DEPOSIT
-            )
-        )
-        OR
-        (
-            :direction = com.vti.springdatajpa.entity.enums.TransactionDirection.OUT
-            AND t.type IN (
-                com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
-                com.vti.springdatajpa.entity.enums.TransactionType.WITHDRAW
-            )
-        )
-    )
-    AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
-    AND (:toDate IS NULL OR t.createdAt <= :toDate)
+        SELECT COUNT(t) FROM Transaction t
+        WHERE t.wallet.id = :walletId
+          AND t.type IN (
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN
+          )
+          AND (:direction IS NULL OR t.direction = :direction)
+          AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+          AND (:toDate IS NULL OR t.createdAt <= :toDate)
     """
     )
     Page<Transaction> findTransferHistory(
             @Param("walletId") Integer walletId,
-            @Param("direction") TransactionDirection direction,
+            @Param("direction") TransactionDirection direction, // null = ALL
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
             Pageable pageable
     );
-
 }

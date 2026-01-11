@@ -4,10 +4,14 @@ import com.vti.springdatajpa.dto.TransferDetailDTO;
 import com.vti.springdatajpa.dto.TransferHistoryDTO;
 import com.vti.springdatajpa.dto.TransferRequest;
 import com.vti.springdatajpa.dto.WalletSelectDTO;
-import com.vti.springdatajpa.service.TransactionService;
+import com.vti.springdatajpa.entity.User;
+import com.vti.springdatajpa.entity.enums.TransactionDirection;
+import com.vti.springdatajpa.entity.enums.TransactionFilterType;
+import com.vti.springdatajpa.service.WalletTransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -21,66 +25,59 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/E-Wallet/transfers")
+@RequestMapping("/api/user/E-Wallet/transfers")
 @RequiredArgsConstructor
 public class TransferController {
 
-    private final TransactionService transactionService;
+    private final WalletTransferService walletTransferService;
 
     @GetMapping("/wallet/{walletId}/history")
     public ResponseEntity<Map<String, Object>> getTransferHistory(
             @PathVariable Integer walletId,
-
+            @RequestParam(required = false) TransactionDirection direction,
+            @RequestParam(required = false) TransactionFilterType filter,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-
-            @RequestParam(required = false) String direction,
-
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime fromDate,
-
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime toDate
+            @RequestParam(defaultValue = "10") int size
     ) {
+        User user = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-        var directionEnum = direction != null
-                ? Enum.valueOf(
-                com.vti.springdatajpa.entity.enums.TransactionDirection.class,
-                direction
-        )
-                : null;
+        LocalDateTime toDate = LocalDateTime.now();
+        LocalDateTime fromDate = null;
 
-        var pageable = PageRequest.of(
+        if (filter != null) {
+            switch (filter) {
+                case LAST_30_DAYS -> fromDate = toDate.minusDays(30);
+                case LAST_MONTH -> fromDate = toDate.minusMonths(1);
+                case LAST_YEAR -> fromDate = toDate.minusYears(1);
+            }
+        }
+
+        Pageable pageable = PageRequest.of(
                 page,
                 size,
                 Sort.by("createdAt").descending()
         );
 
         Page<TransferHistoryDTO> result =
-                transactionService.getTransferHistory(
+                walletTransferService.getTransferHistory(
+                        user.getUserName(),
                         walletId,
-                        directionEnum,
+                        direction,
                         fromDate,
                         toDate,
                         pageable
                 );
 
-        var response = Map.of(
+        return ResponseEntity.ok(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
                 "totalPages", result.getTotalPages(),
                 "currentPage", result.getNumber(),
                 "pageSize", result.getSize()
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/wallet/{walletId}")
-    public ResponseEntity<?> getWallet(@PathVariable Integer walletId) {
-        return ResponseEntity.ok(Map.of("walletId", walletId));
+        ));
     }
 
     @GetMapping("/{transferId}")
@@ -88,14 +85,49 @@ public class TransferController {
             @PathVariable Integer transferId
     ) {
         return ResponseEntity.ok(
-                transactionService.getTransferDetail(transferId)
+                walletTransferService.getTransferDetail(transferId)
         );
     }
+
     @GetMapping("/wallets/search")
     public List<WalletSelectDTO> searchWalletByPhone(
-            @AuthenticationPrincipal UserDetails user,
-            @RequestParam String phone
+            @RequestParam Map<String, String> params
     ) {
-        return transactionService.searchWalletByPhone(user.getUsername(), phone);
+        String phone = params.get("phone");
+
+        if (phone == null || phone.trim().isEmpty()) {
+            return List.of();
+        }
+
+        User user = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String username = user.getUserName();
+
+        return walletTransferService.searchWalletByPhone(
+                username,
+                phone.trim()
+        );
+    }
+
+
+    @PostMapping
+    public ResponseEntity<TransferHistoryDTO> transfer(
+            @RequestBody TransferRequest request
+    ) {
+        User currentUser = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        TransferHistoryDTO tx =
+                walletTransferService.transferByPhone(
+                        currentUser.getUserName(),
+                        request
+                );
+
+        return ResponseEntity.ok(tx);
     }
 }

@@ -1,5 +1,6 @@
 package com.vti.springdatajpa.repository;
 
+import com.vti.springdatajpa.dto.WalletSelectDTO;
 import com.vti.springdatajpa.entity.Wallet;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,14 +30,20 @@ public interface WalletRepository extends JpaRepository<Wallet, Integer> {
     Optional<Wallet> findByCode(String code);
 
     @Query("""
-        select w
-        from Wallet w
-        join w.user u
-        where u.phone = :phone
-        and u.id <> :currentUserId
+    select new com.vti.springdatajpa.dto.WalletSelectDTO(
+        w.id,
+        u.id,
+        u.fullName,
+        w.accountNumber
+    )
+    from Wallet w
+    join w.user u
+    where u.phone = :phone
+    and u.id <> :currentUserId
     """)
-    List<Wallet> searchOtherWalletsByPhone(
+    List<WalletSelectDTO> searchOtherWalletsByPhone(
             @Param("currentUserId") Integer currentUserId,
             @Param("phone") String phone
     );
+
 }

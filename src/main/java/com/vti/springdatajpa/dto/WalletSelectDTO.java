@@ -6,8 +6,10 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class WalletSelectDTO {
+
     private Integer walletId;
-    private String ownerName;
-    private String walletCode;
+    private Integer userId;
+    private String fullName;
     private String accountNumber;
+
 }
