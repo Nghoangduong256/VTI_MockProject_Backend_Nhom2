@@ -10,6 +10,8 @@ import com.vti.springdatajpa.repository.TransactionRepository;
 import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -200,4 +202,20 @@ public class DashboardService {
         System.out.println("DashboardService - User not found with identity: " + identity);
         throw new RuntimeException("User not found with identity: " + identity);
     }
+
+    //Recent Transactions
+    public List<Transaction> getRecentTransactions(String username, int limit) {
+        User user = findUserByUsernameOrEmail(username);
+        Wallet wallet = walletRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+
+        return transactionRepository
+                .findByWalletIdOrderByCreatedAtDesc(
+                        wallet.getId(),
+                        PageRequest.of(0, limit)
+                )
+                .getContent();
+    }
+
+
 }

@@ -1,7 +1,10 @@
 package com.vti.springdatajpa.controller;
 
 import com.vti.springdatajpa.dto.SpendingAnalyticsDTO;
+import com.vti.springdatajpa.dto.TransactionDTO;
 import com.vti.springdatajpa.dto.WalletSummaryDTO;
+import com.vti.springdatajpa.entity.Transaction;
+import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -56,4 +59,28 @@ public class DashboardController {
         List<SpendingAnalyticsDTO> analytics = dashboardService.getSpendingAnalytics(userName, range);
         return ResponseEntity.ok(analytics);
     }
+
+    @GetMapping("/dashboard/recent-transactions")
+    public ResponseEntity<List<TransactionDTO>> getRecentTransactions(
+            @RequestParam(defaultValue = "5") int limit) {
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String userName;
+        if (principal instanceof User) {
+            userName = ((User) principal).getUserName();
+        } else {
+            userName = principal.toString();
+        }
+
+        List<Transaction> transactions =
+                dashboardService.getRecentTransactions(userName, limit);
+
+        return ResponseEntity.ok(
+                transactions.stream()
+                        .map(TransactionDTO::fromEntity)
+                        .toList()
+        );
+    }
+
 }

@@ -35,6 +35,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     // dùng cho phân trang giao dịch
     Page<Transaction> findByWalletId(Integer walletId, Pageable pageable);
 
+    // dùng cho recent transactions
+    Page<Transaction> findByWalletIdOrderByCreatedAtDesc(
+            Integer walletId,
+            Pageable pageable
+    );
+
+
     // dùng cho incoming transactions (direction = IN)
     @Query("SELECT t FROM Transaction t WHERE t.wallet.id = ?1 AND t.direction = ?2 ORDER BY t.createdAt DESC")
     List<Transaction> findIncomingTransactions(Integer walletId, TransactionDirection direction);
@@ -138,5 +145,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("status") String status,
             @Param("limit") int limit
     );
+
 
 }
