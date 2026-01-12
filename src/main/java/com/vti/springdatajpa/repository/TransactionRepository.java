@@ -43,15 +43,34 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     // dùng cho transfer history có phân trang + filter
     // filter theo (walletId), chiều giao dịch (IN/OUT), thời gian (fromDate / toDate)
-    @Query("""
-    SELECT t FROM Transaction t WHERE t.wallet.id = :walletId
-      AND (:direction IS NULL OR t.direction = :direction)
-      AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
-      AND (:toDate IS NULL OR t.createdAt <= :toDate)
-    """)
+    @Query(
+            value = """
+        SELECT t FROM Transaction t
+        WHERE t.wallet.id = :walletId
+          AND t.type IN (
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN
+          )
+          AND (:direction IS NULL OR t.direction = :direction)
+          AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+          AND (:toDate IS NULL OR t.createdAt <= :toDate)
+        ORDER BY t.createdAt DESC
+    """,
+            countQuery = """
+        SELECT COUNT(t) FROM Transaction t
+        WHERE t.wallet.id = :walletId
+          AND t.type IN (
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_OUT,
+              com.vti.springdatajpa.entity.enums.TransactionType.TRANSFER_IN
+          )
+          AND (:direction IS NULL OR t.direction = :direction)
+          AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+          AND (:toDate IS NULL OR t.createdAt <= :toDate)
+    """
+    )
     Page<Transaction> findTransferHistory(
             @Param("walletId") Integer walletId,
-            @Param("direction") TransactionDirection direction,
+            @Param("direction") TransactionDirection direction, // null = ALL
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
             Pageable pageable

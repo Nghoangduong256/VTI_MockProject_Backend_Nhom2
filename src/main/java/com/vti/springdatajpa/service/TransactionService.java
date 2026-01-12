@@ -1,9 +1,6 @@
 package com.vti.springdatajpa.service;
 
-import com.vti.springdatajpa.dto.TransactionDTO;
-import com.vti.springdatajpa.dto.TransactionRequest;
-import com.vti.springdatajpa.dto.TransferHistoryDTO;
-import com.vti.springdatajpa.dto.TransferRequest;
+import com.vti.springdatajpa.dto.*;
 import com.vti.springdatajpa.entity.*;
 import com.vti.springdatajpa.entity.enums.TransactionDirection;
 import com.vti.springdatajpa.entity.enums.TransactionStatus;
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -111,48 +109,5 @@ public class TransactionService {
                 } else {
                         throw new RuntimeException("Invalid transaction type");
                 }
-        }
-
-        public Page<TransferHistoryDTO> getTransferHistory(
-                Integer walletId,
-                TransactionDirection direction,
-                LocalDateTime fromDate,
-                LocalDateTime toDate,
-                Pageable pageable
-        ) {
-
-                var transactions = transactionRepository.findTransferHistory(
-                        walletId,
-                        direction,
-                        fromDate,
-                        toDate,
-                        pageable
-                );
-
-                return transactions.map(tx -> {
-                        var dto = new TransferHistoryDTO();
-                        dto.setId(tx.getId());
-                        dto.setAmount(tx.getAmount());
-                        dto.setStatus(tx.getStatus().name());
-                        dto.setType(tx.getType().name());
-                        dto.setDirection(
-                                tx.getDirection() != null
-                                        ? tx.getDirection().name()
-                                        : "IN"
-                        );
-                        dto.setCreatedAt(tx.getCreatedAt());
-                        dto.setReferenceId(tx.getReferenceId());
-
-                        dto.setPartnerName(switch (tx.getType()) {
-                                case TRANSFER_IN, TRANSFER_OUT -> "P2P Transfer";
-                                case DEPOSIT -> "Deposit Source";
-                                case WITHDRAW -> "Bank Account";
-                                default -> "Transaction";
-                        });
-
-                        dto.setNote("Transfer details");
-
-                        return dto;
-                });
         }
 }

@@ -22,7 +22,7 @@ public class CardController {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("Card List - JWT identity: " + principal);
         System.out.println("Identity type: " + principal.getClass().getName());
-        
+
         String userName;
         if (principal instanceof com.vti.springdatajpa.entity.User) {
             userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
@@ -33,7 +33,7 @@ public class CardController {
         } else {
             throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
         }
-        
+
         return ResponseEntity.ok(cardService.getCards(userName));
     }
     @GetMapping("{userId}/users")
@@ -46,7 +46,7 @@ public class CardController {
     public ResponseEntity<CardDTO> addCard(@Valid @RequestBody CardDTO cardDTO) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("Add Card - JWT identity: " + principal);
-        
+
         String userName;
         if (principal instanceof com.vti.springdatajpa.entity.User) {
             userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
@@ -55,7 +55,7 @@ public class CardController {
         } else {
             throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
         }
-        
+
         return ResponseEntity.ok(cardService.addCard(userName, cardDTO));
     }
 
@@ -63,7 +63,7 @@ public class CardController {
     public ResponseEntity<CardDepositResponse> depositFromCard(@Valid @RequestBody CardDepositRequest request) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("Card Deposit - JWT identity: " + principal);
-        
+
         String userName;
         if (principal instanceof com.vti.springdatajpa.entity.User) {
             userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
@@ -72,7 +72,7 @@ public class CardController {
         } else {
             throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
         }
-        
+
         CardDepositResponse response = cardService.depositFromCard(userName, request);
         return ResponseEntity.ok(response);
     }
@@ -81,7 +81,7 @@ public class CardController {
     public ResponseEntity<List<CardDepositHistoryDTO>> getDepositHistory() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("Card Deposit History - JWT identity: " + principal);
-        
+
         String userName;
         if (principal instanceof com.vti.springdatajpa.entity.User) {
             userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
@@ -90,7 +90,7 @@ public class CardController {
         } else {
             throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
         }
-        
+
         List<CardDepositHistoryDTO> history = cardService.getDepositHistory(userName);
         return ResponseEntity.ok(history);
     }
@@ -99,7 +99,7 @@ public class CardController {
     // public ResponseEntity<CardWithdrawResponse> withdrawFromCard(@Valid @RequestBody CardWithdrawRequest request) {
     //     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     //     System.out.println("Card Withdraw - JWT identity: " + principal);
-    //     
+    //
     //     String userName;
     //     if (principal instanceof com.vti.springdatajpa.entity.User) {
     //         userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
@@ -108,7 +108,7 @@ public class CardController {
     //     } else {
     //         throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
     //     }
-    //     
+    //
     //     CardWithdrawResponse response = cardWithdrawService.withdrawFromCard(userName, request);
     //     return ResponseEntity.ok(response);
     // }
@@ -117,7 +117,7 @@ public class CardController {
     // public ResponseEntity<List<CardWithdrawHistoryDTO>> getWithdrawHistory() {
     //     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     //     System.out.println("Card Withdraw History - JWT identity: " + principal);
-    //     
+    //
     //     String userName;
     //     if (principal instanceof com.vti.springdatajpa.entity.User) {
     //         userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
@@ -126,7 +126,7 @@ public class CardController {
     //     } else {
     //         throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
     //     }
-    //     
+    //
     //     List<CardWithdrawHistoryDTO> history = cardWithdrawService.getWithdrawHistory(userName);
     //     return ResponseEntity.ok(history);
     // }
