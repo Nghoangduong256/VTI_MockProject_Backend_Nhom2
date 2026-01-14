@@ -14,5 +14,6 @@ public class TransferHistoryDTO {
     private LocalDateTime createdAt;
     private String type;
     private String referenceId;
+    private Boolean success;  // ✅ Thêm trường success
 }
 

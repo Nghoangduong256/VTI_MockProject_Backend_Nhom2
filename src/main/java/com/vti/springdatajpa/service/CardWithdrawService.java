@@ -1,14 +1,9 @@
 package com.vti.springdatajpa.service;
 
 import com.vti.springdatajpa.dto.*;
-import com.vti.springdatajpa.entity.Card;
-import com.vti.springdatajpa.entity.CardWithdraw;
-import com.vti.springdatajpa.entity.User;
-import com.vti.springdatajpa.entity.Wallet;
-import com.vti.springdatajpa.repository.CardRepository;
-import com.vti.springdatajpa.repository.CardWithdrawRepository;
-import com.vti.springdatajpa.repository.UserRepository;
-import com.vti.springdatajpa.repository.WalletRepository;
+import com.vti.springdatajpa.entity.*;
+import com.vti.springdatajpa.entity.enums.*;
+import com.vti.springdatajpa.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +19,7 @@ public class CardWithdrawService {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final CardWithdrawRepository cardWithdrawRepository;
+    private final TransactionRepository transactionRepository;
 
     @Transactional
     public CardWithdrawResponse withdrawFromCard(String username, CardWithdrawRequest request) {
@@ -90,6 +86,11 @@ public class CardWithdrawService {
             // Save successful withdraw record
             CardWithdraw savedWithdraw = saveWithdrawRecord(card, user, request.getAmount(), 
                 request.getDescription(), com.vti.springdatajpa.entity.enums.CardWithdrawStatus.SUCCESS);
+
+            // Create transaction record
+            createTransactionRecord(wallet, request.getAmount(), 
+                "Card Withdraw: " + request.getDescription(), 
+                TransactionType.WITHDRAW, TransactionDirection.OUT);
 
             // Create success response
             CardWithdrawResponse response = new CardWithdrawResponse();
@@ -201,5 +202,21 @@ public class CardWithdrawService {
         dto.setTimestamp(withdraw.getCreatedAt());
         dto.setStatus(withdraw.getStatus().name());
         return dto;
+    }
+
+    private void createTransactionRecord(Wallet wallet, Double amount, String description, 
+            TransactionType type, TransactionDirection direction) {
+        Transaction transaction = new Transaction();
+        transaction.setWallet(wallet);
+        transaction.setAmount(amount);
+        transaction.setType(type);
+        transaction.setDirection(direction);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setMetadata(description);
+        transaction.setBalanceBefore(wallet.getBalance() + amount);
+        transaction.setBalanceAfter(wallet.getBalance());
+        transaction.setUpdatedAt(LocalDateTime.now());
+        
+        transactionRepository.save(transaction);
     }
 }

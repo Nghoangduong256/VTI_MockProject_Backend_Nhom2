@@ -1,7 +1,7 @@
 # API Documentation - E-Wallet Backend System
 
-**Last Updated**: 2026-01-14
-**Version**: 3.1
+**Last Updated**: 2026-01-15
+**Version**: 4.0
 
 ---
 
@@ -13,28 +13,47 @@
 
 ### User & Profile APIs  
 - `GET /api/user/profile` - Lấy thông tin cá nhân
+- `PUT /api/user/profile` - Cập nhật thông tin cá nhân
+- `PUT /api/user/profile/avatar` - Cập nhật avatar
 - `GET /api/me` - Lấy thông tin người dùng hiện tại
 
 ### Card APIs
-- `GET /api/cards` - Danh sách thẻ
+- `GET /api/cards` - Danh sách thẻ của user hiện tại
+- `GET /api/cards/{userId}/users` - Danh sách thẻ theo userId
 - `POST /api/cards` - Thêm thẻ mới
+- `POST /api/cards/deposit` - Nạp tiền từ thẻ
+- `POST /api/cards/withdraw` - Rút tiền từ thẻ
 
 ### Wallet APIs
 - `GET /api/wallet/balance` - Xem số dư ví
+- `GET /api/wallet/me` - Lấy thông tin ví (QR)
 
 ### Wallet Transfer APIs
 - `POST /api/wallet/transfers` - Chuyển tiền giữa các ví
-- `GET /api/wallet/transfers/recent` - Lịch sử giao dịch
+- `GET /api/wallet/transfers/recent` - Lịch sử giao dịch gần đây
 - `GET /api/wallet/transfers/lookup/{accountNumber}` - Tìm kiếm tài khoản
+
+### E-Wallet Transfer APIs
+- `GET /api/user/E-Wallet/transfers/wallet/{walletId}/history` - Lịch sử chuyển khoản theo ví
+- `GET /api/user/E-Wallet/transfers/{transferId}` - Chi tiết chuyển khoản
+- `GET /api/user/E-Wallet/transfers/wallets/search` - Tìm kiếm ví theo số điện thoại
+- `POST /api/user/E-Wallet/transfers` - Chuyển tiền qua điện thoại
 
 ### Transaction APIs
 - `GET /api/transactions` - Lịch sử giao dịch (phân trang)
-- `GET /api/transactions/incoming` - Giao dịch đến gần đây
 - `POST /api/transactions/transfer` - Chuyển tiền
 - `POST /api/transactions` - Nạp tiền (topup)
 
 ### Admin APIs
-- `GET /api/admin/transactions` - Xem tất cả giao dịch (Admin)
+- `GET /api/admin/transactions` - Xem tất cả giao dịch
+- `GET /api/admin/wallets` - Xem tất cả ví
+- `PUT /api/admin/wallets/lock/{id}` - Khóa ví
+- `PUT /api/admin/wallets/unlock/{id}` - Mở khóa ví
+
+### User Manager APIs
+- `GET /api/userManager/all` - Xem tất cả users
+- `PUT /api/userManager/lock/{id}` - Khóa user
+- `PUT /api/userManager/unlock/{id}` - Mở khóa user
 
 ### QR Code APIs
 - `GET /api/qr/wallet` - Tạo QR Code cho ví
@@ -42,11 +61,6 @@
 - `POST /api/qr/wallet/with-amount` - Tạo QR với số tiền
 - `POST /api/qr/resolve` - Giải mã QR Payload
 - `POST /api/qr/read-image` - Đọc ảnh QR thành JSON
-
-### E-Wallet Operations
-- `POST /api/E-Wallet/deposits` - Nạp tiền vào ví
-- `GET /api/E-Wallet/deposits/wallet/{id}` - Xem thông tin ví
-- `GET /api/E-Wallet/deposits/wallet/{id}/recent-deposits` - Lịch sử nạp tiền
 
 ### Bank Account APIs
 - `GET /api/bank-account` - Danh sách tài khoản ngân hàng
@@ -93,10 +107,16 @@
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "type": "Bearer",
   "expiresIn": 36000000,
-  "userId": 123,
   "userName": "testuser",
-  "role": "USER"
+  "email": "testuser@example.com",
+  "fullName": "Test User",
+  "roles": ["USER"],
+  "avatar": "base64-avatar-string",
+  "membership": "STANDARD",
+  "status": "ACTIVE",
+  "isActive": true
 }
 ```
 
@@ -348,6 +368,55 @@
 
 ---
 
+### 6.2 Get All Wallets
+**Endpoint**: `GET /api/admin/wallets`
+
+**Query Parameters**:
+- `page`: Số trang (default: 0)
+- `size`: Số lượng record (default: 50)
+
+**Response**:
+```json
+[
+  {
+    "id": 1,
+    "accountNumber": "0987654321",
+    "availableBalance": 1500000.0,
+    "createdAt": "2023-11-20T14:35:00",
+    "status": "ACTIVE",
+    "userId": 2
+  }
+]
+```
+
+---
+
+### 6.3 Lock Wallet
+**Endpoint**: `PUT /api/admin/wallets/lock/{id}`
+
+**Path Parameters**:
+- `id`: Wallet ID
+
+**Response**:
+```json
+"Wallet locked successfully"
+```
+
+---
+
+### 6.4 Unlock Wallet
+**Endpoint**: `PUT /api/admin/wallets/unlock/{id}`
+
+**Path Parameters**:
+- `id`: Wallet ID
+
+**Response**:
+```json
+"Wallet unlocked successfully"
+```
+
+---
+
 ## 7. QR Code APIs
 
 ### 7.1 Generate QR Code
@@ -465,5 +534,17 @@ curl -X GET "http://localhost:8080/api/admin/transactions?page=0&size=50" \
 
 ---
 
-**API Documentation Updated: 2026-01-14**
-**Version: 3.1**
+**API Documentation Updated: 2026-01-15**
+**Version: 4.0**
+**Total APIs**: 45 endpoints
+
+## Notes
+
+1. **Authentication**: Tất cả APIs (trừ register và login) cần JWT token trong header `Authorization: Bearer <token>`
+2. **Pagination**: Các API trả về danh sách hỗ trợ phân trang với `page` và `size`
+3. **Validation**: Request body được validate, lỗi 400 sẽ trả về chi tiết lỗi
+4. **Wallet Status**: Chỉ wallet `ACTIVE` mới có thể thực hiện giao dịch
+5. **Transaction Status**: Giao dịch có thể thành công (`success: true`) hoặc thất bại (`success: false`)
+6. **Currency**: Mặc định là VND
+7. **Timestamp Format**: ISO 8601 (yyyy-MM-ddTHH:mm:ss)
+8. **Error Handling**: Các lỗi phổ biến: 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 404 (Not Found), 500 (Internal Server Error)
