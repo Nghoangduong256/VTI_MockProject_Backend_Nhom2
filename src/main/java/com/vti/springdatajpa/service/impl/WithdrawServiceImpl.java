@@ -90,7 +90,7 @@ public class WithdrawServiceImpl implements WithdrawService {
         tx.setFee(fee.doubleValue());
         tx.setBalanceBefore(wallet.getAvailableBalance());        // ✅ Đúng
         tx.setBalanceAfter(wallet.getAvailableBalance());         // ✅ Đúngtrừ balance ở bước PENDING
-        tx.setStatus(TransactionStatus.PENDING);
+        tx.setStatus(TransactionStatus.COMPLETED);
         tx.setIdempotencyKey(idempotencyKey);
 
         tx.setMetadata("""
