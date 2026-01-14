@@ -10,6 +10,7 @@ import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,5 +110,11 @@ public class TransactionService {
                 } else {
                         throw new RuntimeException("Invalid transaction type");
                 }
+        }
+
+        public List<Transaction> getAllTransactionsForAdmin(int page, int size) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Transaction> transactions = transactionRepository.findAll(pageable);
+                return transactions.getContent();
         }
 }
