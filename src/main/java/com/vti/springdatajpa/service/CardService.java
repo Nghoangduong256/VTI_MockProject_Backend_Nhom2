@@ -2,6 +2,7 @@ package com.vti.springdatajpa.service;
 
 import com.vti.springdatajpa.dto.*;
 import com.vti.springdatajpa.entity.*;
+import com.vti.springdatajpa.entity.enums.*;
 import com.vti.springdatajpa.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class CardService {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final CardDepositRepository cardDepositRepository;
+    private final TransactionRepository transactionRepository;
 
     public List<CardDTO> getCards(String username) {
         User user = findUserByUsernameOrEmail(username);
@@ -117,6 +119,11 @@ public class CardService {
             // Save successful deposit record
             CardDeposit savedDeposit = saveDepositRecord(card, user, request.getAmount(), 
                 request.getDescription(), CardDeposit.DepositStatus.SUCCESS);
+
+            // Create transaction record
+            createTransactionRecord(wallet, request.getAmount(), 
+                "Card Deposit: " + request.getDescription(), 
+                TransactionType.DEPOSIT, TransactionDirection.IN);
 
             // Create success response
             CardDepositResponse response = new CardDepositResponse();
@@ -262,6 +269,22 @@ public class CardService {
         
         System.out.println("CardService - User not found with identity: " + identity);
         throw new RuntimeException("User not found with identity: " + identity);
+    }
+
+    private void createTransactionRecord(Wallet wallet, Double amount, String description, 
+            TransactionType type, TransactionDirection direction) {
+        Transaction transaction = new Transaction();
+        transaction.setWallet(wallet);
+        transaction.setAmount(amount);
+        transaction.setType(type);
+        transaction.setDirection(direction);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setMetadata(description);
+        transaction.setBalanceBefore(wallet.getBalance() - amount);
+        transaction.setBalanceAfter(wallet.getBalance());
+        transaction.setUpdatedAt(LocalDateTime.now());
+        
+        transactionRepository.save(transaction);
     }
 
 }

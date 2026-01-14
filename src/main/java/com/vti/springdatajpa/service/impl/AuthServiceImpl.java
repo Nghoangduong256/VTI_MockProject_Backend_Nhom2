@@ -24,9 +24,10 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByUserName(request.getUserName())
                 .orElseThrow(() -> new AuthException("Invalid username or password"));
 
-        if (!user.isActive()) {
-            throw new AuthException("User is inactive");
-        }
+        // Optional: Allow inactive users to login
+        // if (!user.isActive()) {
+        //     throw new AuthException("User is inactive");
+        // }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new AuthException("Invalid username or password");
@@ -42,9 +43,9 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getFullName(),
                 java.util.Collections.singletonList(user.getRole().name()),
-                user.getAvatar(),
-                user.getMembership()
-                );
+                user.isActive() ? "ACTIVE" : "INACTIVE",
+                user.isActive()
+        );
 
     }
 }

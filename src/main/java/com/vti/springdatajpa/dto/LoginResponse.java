@@ -18,7 +18,7 @@ public class LoginResponse {
     private String email;
     private String fullName;
     private java.util.List<String> roles;
-    private String avatar;
-    private String membership;
+    private String status;
+    private boolean isActive;
 
 }

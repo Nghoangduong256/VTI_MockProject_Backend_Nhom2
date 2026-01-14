@@ -10,6 +10,7 @@ import com.vti.springdatajpa.entity.Wallet;
 import com.vti.springdatajpa.entity.enums.TransactionDirection;
 import com.vti.springdatajpa.entity.enums.TransactionStatus;
 import com.vti.springdatajpa.entity.enums.TransactionType;
+import com.vti.springdatajpa.entity.enums.WalletStatus;
 import com.vti.springdatajpa.repository.TransactionRepository;
 import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
@@ -76,6 +77,45 @@ public class WalletTransferService {
 
         Wallet lockedReceiverWallet = walletRepository.findByIdForUpdate(receiverWallet.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Receiver wallet lock failed"));
+
+        // Check wallet status
+        if (lockedSenderWallet.getStatus() != WalletStatus.ACTIVE) {
+            // Create failed transaction record
+            Transaction failedTx = buildTransaction(
+                    lockedSenderWallet,
+                    request.getAmount(),  // ✅ Sửa lỗi amount
+                    TransactionDirection.OUT,
+                    TransactionType.TRANSFER_OUT,
+                    "FAILED-" + System.currentTimeMillis(),
+                    "Wallet not active - cannot transfer",
+                    LocalDateTime.now()
+            );
+            failedTx.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(failedTx);
+            
+            TransferHistoryDTO failedDto = mapToHistoryDTO(failedTx, "System");
+            failedDto.setSuccess(false);
+            return failedDto;
+        }
+        
+        if (lockedReceiverWallet.getStatus() != WalletStatus.ACTIVE) {
+            // Create failed transaction record
+            Transaction failedTx = buildTransaction(
+                    lockedSenderWallet,
+                    request.getAmount(),  // ✅ Sửa lỗi amount
+                    TransactionDirection.OUT,
+                    TransactionType.TRANSFER_OUT,
+                    "FAILED-" + System.currentTimeMillis(),
+                    "Receiver wallet not active - cannot receive money",
+                    LocalDateTime.now()
+            );
+            failedTx.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(failedTx);
+            
+            TransferHistoryDTO failedDto = mapToHistoryDTO(failedTx, "System");
+            failedDto.setSuccess(false);
+            return failedDto;
+        }
 
         Double amount = request.getAmount();
 
@@ -232,6 +272,10 @@ public class WalletTransferService {
         dto.setReferenceId(tx.getReferenceId());
         dto.setPartnerName(partnerName);
         dto.setNote(tx.getMetadata());
+        
+        // Set success based on transaction status
+        dto.setSuccess(tx.getStatus() == TransactionStatus.COMPLETED);
+        
         return dto;
     }
 }

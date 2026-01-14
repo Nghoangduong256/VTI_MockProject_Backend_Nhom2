@@ -19,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -115,7 +116,7 @@ public class TransferController {
 
     @PostMapping
     public ResponseEntity<TransferHistoryDTO> transfer(
-            @RequestBody TransferRequest request
+            @Valid @RequestBody TransferRequest request
     ) {
         User currentUser = (User) SecurityContextHolder
                 .getContext()
