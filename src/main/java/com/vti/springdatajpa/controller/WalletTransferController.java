@@ -23,17 +23,17 @@ public class WalletTransferController {
 
     @PostMapping
     public ResponseEntity<WalletTransferResponse> transferToWallet(@Valid @RequestBody WalletTransferRequest request) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        WalletTransferResponse response = transactionService.transferToWallet(user.getUserName(), request);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userName;
+        if (principal instanceof com.vti.springdatajpa.entity.User) {
+            userName = ((com.vti.springdatajpa.entity.User) principal).getUserName();
+        } else if (principal instanceof String) {
+            userName = (String) principal;
+        } else {
+            throw new RuntimeException("Unsupported identity type: " + principal.getClass().getName());
+        }
+        WalletTransferResponse response = transactionService.transferToWallet(userName, request);
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/recent")
-    public ResponseEntity<List<WalletTransactionDTO>> getRecentTransactions(
-            @RequestParam(defaultValue = "10") int limit) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<WalletTransactionDTO> transactions = transactionService.getRecentTransactions(user.getUserName(), limit);
-        return ResponseEntity.ok(transactions);
     }
 
     @GetMapping("/lookup/{accountNumber}")

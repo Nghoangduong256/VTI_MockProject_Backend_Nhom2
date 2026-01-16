@@ -118,4 +118,92 @@ public class TransactionService {
                 Page<Transaction> transactions = transactionRepository.findAll(pageable);
                 return transactions.getContent();
         }
+
+        public WalletTransferResponse transferToWallet(String username, WalletTransferRequest request) {
+                try {
+                        User sender = userRepository.findByUserName(username)
+                                        .orElseThrow(() -> new RuntimeException("Sender not found"));
+                        Wallet senderWallet = walletRepository.findByUserId(sender.getId())
+                                        .orElseThrow(() -> new RuntimeException("Sender wallet not found"));
+
+                        if (senderWallet.getAvailableBalance() < request.getAmount()) {
+                                throw new RuntimeException("Insufficient balance");
+                        }
+
+                        // Mock receiver lookup (in real app, would lookup by account number)
+                        User receiver = userRepository.findByUserName("user") // Mock receiver
+                                        .orElseThrow(() -> new RuntimeException("Receiver not found"));
+                        Wallet receiverWallet = walletRepository.findByUserId(receiver.getId())
+                                        .orElseThrow(() -> new RuntimeException("Receiver wallet not found"));
+
+                        // Perform transfer
+                        senderWallet.setBalance(senderWallet.getBalance() - request.getAmount());
+                        senderWallet.setAvailableBalance(senderWallet.getAvailableBalance() - request.getAmount());
+                        walletRepository.save(senderWallet);
+
+                        receiverWallet.setBalance(receiverWallet.getBalance() + request.getAmount());
+                        receiverWallet.setAvailableBalance(receiverWallet.getAvailableBalance() + request.getAmount());
+                        walletRepository.save(receiverWallet);
+
+                        // Create transactions
+                        Transaction txOut = new Transaction();
+                        txOut.setWallet(senderWallet);
+                        txOut.setAmount(request.getAmount());
+                        txOut.setType(TransactionType.TRANSFER_OUT);
+                        txOut.setDirection(TransactionDirection.OUT);
+                        txOut.setStatus(TransactionStatus.COMPLETED);
+                        txOut.setCreatedAt(LocalDateTime.now());
+                        txOut.setMetadata("Transfer to " + request.getToAccountNumber());
+                        transactionRepository.save(txOut);
+
+                        Transaction txIn = new Transaction();
+                        txIn.setWallet(receiverWallet);
+                        txIn.setAmount(request.getAmount());
+                        txIn.setType(TransactionType.TRANSFER_IN);
+                        txIn.setDirection(TransactionDirection.IN);
+                        txIn.setStatus(TransactionStatus.COMPLETED);
+                        txIn.setCreatedAt(LocalDateTime.now());
+                        txIn.setMetadata("Transfer from " + username);
+                        transactionRepository.save(txIn);
+
+                        WalletTransferResponse response = new WalletTransferResponse();
+                        response.setSuccess(true);
+                        response.setMessage("Transfer successful");
+                        response.setTransactionId(txOut.getId());
+                        return response;
+                } catch (Exception e) {
+                        WalletTransferResponse response = new WalletTransferResponse();
+                        response.setSuccess(false);
+                        response.setMessage("Transfer failed: " + e.getMessage());
+                        return response;
+                }
+        }
+
+        public AccountLookupResponse lookupAccount(String accountNumber) {
+                try {
+                        // Mock lookup - in real app would query by account number
+                        User user = userRepository.findByUserName("user") // Mock user
+                                        .orElse(null);
+                        
+                        if (user == null) {
+                                AccountLookupResponse response = new AccountLookupResponse();
+                                response.setFound(false);
+                                return response;
+                        }
+
+                        Wallet wallet = walletRepository.findByUserId(user.getId())
+                                        .orElse(null);
+
+                        AccountLookupResponse response = new AccountLookupResponse();
+                        response.setFound(true);
+                        response.setAccountNumber(accountNumber);
+                        response.setAccountHolderName(user.getFullName() != null ? user.getFullName() : user.getUserName());
+                        response.setAvatarUrl("https://i.pravatar.cc/150?u=" + user.getUserName());
+                        return response;
+                } catch (Exception e) {
+                        AccountLookupResponse response = new AccountLookupResponse();
+                        response.setFound(false);
+                        return response;
+                }
+        }
 }

@@ -17,4 +17,5 @@ public class WalletTransferResponse {
     private String status; // SUCCESS, FAILED
     private String message;
     private String transactionType; // WALLET_TRANSFER
+    private Boolean success; // Add this field
 }
