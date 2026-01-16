@@ -6,6 +6,7 @@ import com.vti.springdatajpa.entity.Transaction;
 import com.vti.springdatajpa.entity.User;
 import com.vti.springdatajpa.entity.Wallet;
 import com.vti.springdatajpa.entity.enums.TransactionDirection;
+import com.vti.springdatajpa.entity.enums.TransactionStatus;
 import com.vti.springdatajpa.repository.TransactionRepository;
 import com.vti.springdatajpa.repository.UserRepository;
 import com.vti.springdatajpa.repository.WalletRepository;
@@ -58,10 +59,13 @@ public class DashboardService {
         Double expense = 0.0;
 
         for (Transaction transaction : transactions) {
-            if (transaction.getDirection() == TransactionDirection.IN) {
-                income += transaction.getAmount();
-            } else {
-                expense += transaction.getAmount();
+            // Only include COMPLETED transactions in calculations
+            if (transaction.getStatus() == TransactionStatus.COMPLETED) {
+                if (transaction.getDirection() == TransactionDirection.IN) {
+                    income += transaction.getAmount();
+                } else {
+                    expense += transaction.getAmount();
+                }
             }
         }
 
